@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MSP-Sentinel AI • Autonomous Multi-Tenant Cloud Reliability Console</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --card-border: #1e293b;
+      --aws-orange: #ff9900;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --accent-purple: #a855f7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    
+    /* Top Header */
+    header { background: #0b0f19; border-bottom: 2px solid var(--aws-orange); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-badge { background: var(--aws-orange); color: #000; font-weight: 800; font-size: 14px; padding: 4px 10px; border-radius: 6px; }
+    .logo h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+    .hackathon-pill { background: #1e293b; border: 1px solid var(--aws-orange); color: var(--aws-orange); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+    
+    /* Main Layout */
+    .container { max-width: 1440px; margin: 0 auto; padding: 24px; width: 100%; display: grid; grid-template-columns: 340px 1fr; gap: 24px; }
+    
+    /* Sidebar */
+    .sidebar { display: flex; flex-direction: column; gap: 20px; }
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; }
+    .card h3 { font-size: 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; color: var(--text); }
+    .tenant-list { display: flex; flex-direction: column; gap: 10px; }
+    .tenant-item { padding: 12px; border-radius: 8px; background: #0f172a; border: 1px solid var(--card-border); cursor: pointer; transition: all 0.2s; }
+    .tenant-item:hover, .tenant-item.active { border-color: var(--aws-orange); background: #172554; }
+    .tenant-header { display: flex; justify-content: space-between; font-weight: 600; font-size: 14px; }
+    .tenant-id { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .status-healthy { background: var(--accent-green); }
+    .status-alert { background: var(--accent-red); animation: pulse 1.5s infinite; }
+    
+    @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+    
+    /* Metrics Summary */
+    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+    .metric-box { background: #0b0f19; padding: 12px; border-radius: 8px; border: 1px solid #1e293b; text-align: center; }
+    .metric-val { font-size: 22px; font-weight: 800; color: var(--accent-blue); }
+    .metric-lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    
+    /* Main Content */
+    .main-panel { display: flex; flex-direction: column; gap: 20px; }
+    
+    /* Incident Alert Banner */
+    .alert-banner { background: #450a0a; border: 2px solid var(--accent-red); border-radius: 12px; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .alert-info h2 { font-size: 18px; color: #fca5a5; display: flex; align-items: center; gap: 8px; }
+    .alert-info p { color: #fecaca; font-size: 14px; margin-top: 6px; }
+    .action-btn { background: var(--aws-orange); color: #000; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .action-btn:hover { background: #f59e0b; transform: scale(1.02); }
+    .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    /* Workflow Stages */
+    .pipeline-view { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    
+    .stage-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; }
+    .stage-card.active { border-color: var(--aws-orange); }
+    .stage-card.completed { border-color: var(--accent-green); }
+    
+    .stage-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; margin-bottom: 10px; }
+    .badge-bedrock { background: #451a03; color: var(--aws-orange); border: 1px solid var(--aws-orange); }
+    .badge-ssm { background: #064e3b; color: var(--accent-green); border: 1px solid var(--accent-green); }
+    
+    .terminal-box { background: #05070c; border: 1px solid #1e293b; border-radius: 8px; padding: 14px; font-family: monospace; font-size: 12px; color: #cbd5e1; height: 220px; overflow-y: auto; line-height: 1.5; margin-top: 12px; }
+    .log-line { margin-bottom: 4px; }
+    .log-time { color: var(--text-muted); }
+    .log-bedrock { color: var(--aws-orange); }
+    .log-success { color: var(--accent-green); }
+    .log-error { color: var(--accent-red); }
+    
+    /* Report Section */
+    .report-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 24px; }
+    .report-card h3 { color: var(--accent-green); margin-bottom: 16px; font-size: 18px; display: flex; align-items: center; justify-content: space-between; }
+    .report-content { background: #0b0f19; border: 1px solid #1e293b; border-radius: 8px; padding: 20px; font-size: 13px; line-height: 1.6; color: #e2e8f0; }
+    
+    /* Bottom Controls */
+    .control-row { display: flex; gap: 12px; margin-top: 10px; }
+    .sec-btn { background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px 18px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .sec-btn:hover { background: #334155; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <span class="logo-badge">AWS MSP</span>
+      <h1>MSP-Sentinel AI Console</h1>
+    </div>
+    <div style="display:flex; gap: 12px; align-items: center;">
+      <span class="hackathon-pill">AWS MSP AI Hackathon • Track 1</span>
+      <a href="https://github.com" target="_blank" style="color:var(--text-muted); text-decoration:none; font-size:13px;">Private Repo Shared with Testing</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Sidebar: Multi-Tenant Fleet -->
+    <div class="sidebar">
+      <div class="card">
+        <h3>Connected Client Fleets <span style="font-size:12px; color:var(--text-muted);">3 Active</span></h3>
+        <div class="tenant-list">
+          <div class="tenant-item active" id="tenant-fintech" onclick="selectTenant('fintech')">
+            <div class="tenant-header">
+              <span>Apex Fintech Global</span>
+              <span class="status-dot status-alert" id="fintech-dot"></span>
+            </div>
+            <div class="tenant-id">Account: #8910-FINTECH-PROD (us-east-1)</div>
+          </div>
+          <div class="tenant-item" id="tenant-health" onclick="selectTenant('health')">
+            <div class="tenant-header">
+              <span>CarePulse Health</span>
+              <span class="status-dot status-healthy"></span>
+            </div>
+            <div class="tenant-id">Account: #4402-HEALTHCARE-PROD (us-west-2)</div>
+          </div>
+          <div class="tenant-item" id="tenant-ecom" onclick="selectTenant('ecom')">
+            <div class="tenant-header">
+              <span>OmniStore Retail</span>
+              <span class="status-dot status-healthy"></span>
+            </div>
+            <div class="tenant-id">Account: #1209-ECOMMERCE-PROD (eu-west-1)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>MSP Fleet Operational ROI</h3>
+        <div class="metric-grid">
+          <div class="metric-box">
+            <div class="metric-val" id="metric-mttr">4.2s</div>
+            <div class="metric-lbl">Avg Resolution (MTTR)</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val" style="color:var(--accent-green);">$18.4k</div>
+            <div class="metric-lbl">SLA Penalties Saved</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val">99.4%</div>
+            <div class="metric-lbl">Bedrock RCA Precision</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val" style="color:var(--aws-orange);">0ms</div>
+            <div class="metric-lbl">Unplanned Downtime</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>AWS AI Stack Integration</h3>
+        <ul style="font-size:12px; color:var(--text-muted); line-height:1.8; list-style-type:none;">
+          <li>🤖 <b>Model:</b> Claude 3.5 Sonnet on Bedrock</li>
+          <li>⚡ <b>Eventing:</b> EventBridge Cross-Account</li>
+          <li>🛡️ <b>Remediation:</b> AWS Systems Manager (SSM)</li>
+          <li>🔍 <b>Validation:</b> CloudWatch Synthetics</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Main Panel -->
+    <div class="main-panel">
+      <!-- Active Outage Alert Banner -->
+      <div class="alert-banner" id="outage-banner">
+        <div class="alert-info">
+          <h2>⚠️ CRITICAL INCIDENT (P1) DETECTED</h2>
+          <p id="outage-summary"><b>Account: #8910-FINTECH-PROD</b> • HTTP 504 Gateway Timeouts surging (68% error rate) on ECS Fargate.</p>
+        </div>
+        <button class="action-btn" id="start-triage-btn" onclick="runAutonomousResolution()">
+          ⚡ Run Bedrock Autonomous Resolution
+        </button>
+      </div>
+
+      <!-- Live Stages -->
+      <div class="pipeline-view">
+        <!-- Stage 1: Bedrock Cognitive Triage -->
+        <div class="stage-card" id="stage1-card">
+          <span class="stage-badge badge-bedrock">STAGE 1: AMAZON BEDROCK REASONING</span>
+          <h4 style="font-size:15px; margin-bottom:8px;">Root-Cause Diagnostic Stream</h4>
+          <p style="font-size:12px; color:var(--text-muted);">Correlating CloudWatch alarms, RDS Performance Insights, and VPC logs.</p>
+          <div class="terminal-box" id="bedrock-terminal">
+            <div class="log-line"><span class="log-time">[02:14:02 UTC]</span> EventBridge: Intercepted Target5XXCountHigh from #8910.</div>
+            <div class="log-line"><span class="log-time">[02:14:03 UTC]</span> Bedrock Agent: Querying cross-account CloudWatch metrics...</div>
+          </div>
+        </div>
+
+        <!-- Stage 2: Systems Manager Remediation -->
+        <div class="stage-card" id="stage2-card">
+          <span class="stage-badge badge-ssm">STAGE 2: SSM SELF-HEALING EXECUTION</span>
+          <h4 style="font-size:15px; margin-bottom:8px;">Closed-Loop Remediation & Verification</h4>
+          <p style="font-size:12px; color:var(--text-muted);">Dispatches safety-verified SSM documents and triggers canary probes.</p>
+          <div class="terminal-box" id="ssm-terminal">
+            <div class="log-line"><span class="log-time">[02:14:03 UTC]</span> SSM Engine: Awaiting Bedrock diagnostic playbook...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stage 3: Executive Post-Incident Report -->
+      <div class="report-card" id="report-card">
+        <h3>
+          <span>📋 Executive Post-Incident Review (PIR)</span>
+          <span style="font-size:12px; font-weight:normal; color:var(--text-muted);">SOC 2 / HIPAA Audit Ready</span>
+        </h3>
+        <div class="report-content" id="report-view">
+          <i>Click "Run Bedrock Autonomous Resolution" above to witness end-to-end incident triage, automated self-healing, and executive report synthesis.</i>
+        </div>
+        <div class="control-row">
+          <button class="sec-btn" onclick="resetIncident()">🔄 Reset Simulation</button>
+          <button class="sec-btn" onclick="copyReport()">📋 Copy Markdown Report</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isRunning = false;
+
+    function log(terminalId, text, className) {
+      const term = document.getElementById(terminalId);
+      const line = document.createElement('div');
+      line.className = 'log-line ' + (className || '');
+      const timeStr = new Date().toISOString().substring(11, 19);
+      line.innerHTML = `<span class="log-time">[${timeStr} UTC]</span> ${text}`;
+      term.appendChild(line);
+      term.scrollTop = term.scrollHeight;
+    }
+
+    async function runAutonomousResolution() {
+      if (isRunning) return;
+      isRunning = true;
+      const btn = document.getElementById('start-triage-btn');
+      btn.disabled = true;
+      btn.innerText = "⏳ Bedrock Triage in Progress...";
+
+      document.getElementById('stage1-card').classList.add('active');
+
+      log('bedrock-terminal', 'Invoking Amazon Bedrock (anthropic.claude-3-5-sonnet)...', 'log-bedrock');
+      await sleep(600);
+      log('bedrock-terminal', 'Correlating 12,480 telemetry data points across ECS and Aurora DB...', 'log-bedrock');
+      await sleep(800);
+      log('bedrock-terminal', 'Anomaly Detected: Primary DB thread pool saturated (1,998 / 2,000 connections).', 'log-error');
+      await sleep(700);
+      log('bedrock-terminal', 'Traced fault to deployment commit #b4a92c: unindexed query loop.', 'log-bedrock');
+      await sleep(600);
+      log('bedrock-terminal', 'Root Cause Confirmed (Confidence: 99.4%): Max connections exhausted.', 'log-success');
+      log('bedrock-terminal', 'Generated Recommended SSM Playbook: AWS-ScaleAuroraReplicaPool & TaskRecycle.', 'log-bedrock');
+
+      document.getElementById('stage1-card').classList.remove('active');
+      document.getElementById('stage1-card').classList.add('completed');
+      document.getElementById('stage2-card').classList.add('active');
+
+      btn.innerText = "⏳ Executing SSM Self-Healing...";
+      await sleep(500);
+
+      log('ssm-terminal', 'SSM: Invoking AWS-ScaleAuroraReplicaPool on prod-aurora-cluster-8910...', 'log-bedrock');
+      await sleep(700);
+      log('ssm-terminal', 'SSM: Provisioned Aurora Read Replica (db.r6g.xlarge) — DB pool offloaded.', 'log-success');
+      await sleep(600);
+      log('ssm-terminal', 'SSM: Executing AWS-RecycleECSTasksGracefully (Batch: 25%)...', 'log-bedrock');
+      await sleep(700);
+      log('ssm-terminal', 'SSM: Rolling recycle complete. Stale connection handles flushed.', 'log-success');
+      await sleep(600);
+      log('ssm-terminal', 'Synthetics: Dispatching 50 canary health check probes...', 'log-bedrock');
+      await sleep(800);
+      log('ssm-terminal', 'Synthetics Probe Passed: 50/50 200 OK • Latency: 42.4ms • 0% Errors.', 'log-success');
+      log('ssm-terminal', 'SLA Target (99.95%) Restored. 0s Unplanned Downtime.', 'log-success');
+
+      document.getElementById('stage2-card').classList.remove('active');
+      document.getElementById('stage2-card').classList.add('completed');
+
+      // Update UI Banner to Green
+      const banner = document.getElementById('outage-banner');
+      banner.style.background = '#064e3b';
+      banner.style.borderColor = '#10b981';
+      document.getElementById('fintech-dot').className = 'status-dot status-healthy';
+      banner.querySelector('h2').innerHTML = '✅ ALL SYSTEMS OPERATIONAL • INCIDENT RESOLVED';
+      banner.querySelector('h2').style.color = '#6ee7b7';
+      document.getElementById('outage-summary').innerHTML = '<b>Account: #8910-FINTECH-PROD</b> • Remediated in 4.2s via Amazon Bedrock & AWS Systems Manager.';
+
+      btn.innerText = "✅ Incident Resolved & Verified";
+      btn.style.background = "#10b981";
+
+      // Render Executive Report
+      renderReport();
+      isRunning = false;
+    }
+
+    function renderReport() {
+      const rep = `
+        <h4 style="color:#ff9900; margin-bottom:12px;">INCIDENT: INC-AWS-2026-9041 • RESOLVED & VERIFIED IN 4.2 SECONDS</h4>
+        <p><b>Target Account:</b> 8910-FINTECH-PROD (Apex Fintech Global) | <b>Severity:</b> Critical (P1)</p>
+        <p style="margin-top:8px;"><b>Root Cause:</b> Database connection pool exhaustion caused by an unindexed query loop introduced in microservice release <code>v2.4.1 (commit #b4a92c)</code>. Peak ingress traffic rapidly depleted thread handles, triggering cascading HTTP 504 Gateway Timeouts.</p>
+        <div style="background:#111827; padding:12px; border-radius:6px; margin:14px 0; border-left:4px solid #10b981;">
+          <b>Autonomous Actions Executed via AWS Systems Manager (SSM):</b>
+          <ul style="margin-left:20px; margin-top:6px;">
+            <li><code>AWS-ScaleAuroraReplicaPool</code>: Provisioned Aurora Read Replica (db.r6g.xlarge) to distribute read connection pressure.</li>
+            <li><code>AWS-RecycleECSTasksGracefully</code>: Executed rolling zero-downtime task recycling to purge leaked thread handles.</li>
+            <li><code>CloudWatch Synthetics Canary</code>: 50 probes sent • 100% successful • Average latency restored to 42.4ms (down from 5,420ms).</li>
+          </ul>
+        </div>
+        <p><b>Business Outcome:</b> Prevented 52 minutes of estimated client downtime and <b>$18,400.00 in contractual SLA breach penalties</b>. Complete audit trail signed and dispatched to AWS CloudTrail SOC 2 vault.</p>
+      `;
+      document.getElementById('report-view').innerHTML = rep;
+    }
+
+    function resetIncident() {
+      location.reload();
+    }
+
+    function copyReport() {
+      const text = document.getElementById('report-view').innerText;
+      navigator.clipboard.writeText(text);
+      alert('Executive Report copied to clipboard!');
+    }
+
+    function selectTenant(tenant) {
+      document.querySelectorAll('.tenant-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('tenant-' + tenant).classList.add('active');
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+  </script>
+</body>
+</html>
