@@ -87,8 +87,21 @@
     
     /* Bottom Controls */
     .control-row { display: flex; gap: 12px; margin-top: 10px; }
-    .sec-btn { background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px 18px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .sec-btn { background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px 18px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: 0.2s; }
     .sec-btn:hover { background: #334155; }
+
+    /* Slack Modal */
+    .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); z-index: 999; justify-content: center; align-items: center; }
+    .modal-backdrop.open { display: flex; }
+    .slack-modal { background: #1a1d21; border: 1px solid #383f45; border-radius: 12px; width: 620px; max-width: 92%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+    .slack-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2c3136; padding-bottom: 14px; margin-bottom: 18px; }
+    .slack-tabs { display: flex; gap: 8px; }
+    .slack-tab-btn { background: #222529; border: 1px solid #383f45; color: #cbd5e1; padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+    .slack-tab-btn.active { background: #611f69; border-color: #a855f7; color: #fff; font-weight: 700; }
+    .slack-card-body { background: #222529; border: 1px solid #383f45; border-left: 4px solid #ef4444; border-radius: 8px; padding: 18px; }
+    .slack-card-body.resolved { border-left-color: #10b981; }
+    .slack-btn-primary { background: #007a5a; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .slack-btn-sec { background: transparent; color: #e2e8f0; border: 1px solid #565856; padding: 8px 14px; border-radius: 4px; font-size: 13px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -216,6 +229,84 @@
         <div class="control-row">
           <button class="sec-btn" onclick="resetIncident()">🔄 Reset Simulation</button>
           <button class="sec-btn" onclick="copyReport()">📋 Copy Markdown Report</button>
+          <button class="sec-btn" onclick="openSlackModal()" style="border-color:#a855f7; color:#c084fc;">💬 Preview Slack/Teams Alert</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slack / Teams Interactive Card Modal -->
+  <div class="modal-backdrop" id="slack-modal" onclick="closeSlackModal(event)">
+    <div class="slack-modal" onclick="event.stopPropagation()">
+      <div class="slack-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:18px;">💬</span>
+          <div>
+            <h3 style="font-size:16px; margin:0;">Slack & Teams Dispatcher Preview</h3>
+            <span style="font-size:12px; color:var(--text-muted);">#msp-oncall-alerts • Micro-SaaS Feature</span>
+          </div>
+        </div>
+        <button onclick="closeSlackModal()" style="background:transparent; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">&times;</button>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div class="slack-tabs">
+          <button class="slack-tab-btn active" id="tab-btn-incident" onclick="switchSlackTab('incident')">🚨 P1 Alert Card</button>
+          <button class="slack-tab-btn" id="tab-btn-resolution" onclick="switchSlackTab('resolution')">✅ Resolved Card</button>
+        </div>
+        <span style="font-size:11px; color:#10b981; background:#064e3b; padding:2px 8px; border-radius:10px;">Webhook Live Ready</span>
+      </div>
+
+      <!-- Incident Card View -->
+      <div class="slack-card-body" id="slack-view-incident">
+        <div style="font-weight:700; color:#f87171; font-size:15px; margin-bottom:8px;">
+          🚨 [CRITICAL] 8910-FINTECH-PROD • Incident Detected
+        </div>
+        <div style="font-size:13px; color:#cbd5e1; margin-bottom:12px; line-height:1.5;">
+          <b>Incident Reference:</b> <code>INC-AWS-2026-9041</code><br>
+          <b>Cognitive Engine:</b> Amazon Bedrock (<code>claude-3-5-sonnet</code>) • <b>Triage:</b> <code>4.2s</code><br>
+          <b>Confidence Score:</b> <span style="color:#34d399; font-weight:700;">99.4% Precision</span>
+        </div>
+        <div style="background:#181a1f; padding:10px; border-radius:6px; font-size:12px; color:#e2e8f0; margin-bottom:12px; border-left:3px solid #ff9900;">
+          <b>🧠 Bedrock Root Cause Analysis:</b><br>
+          Aurora MySQL connection pool exhaustion triggered by unindexed query loop in microservice release <code>v2.4.1 (commit #b4a92c)</code>.
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12px; margin-bottom:16px;">
+          <div><span style="color:#94a3b8;">5xx Errors:</span> <code>482 errors</code></div>
+          <div><span style="color:#94a3b8;">DB Connections:</span> <code>1,998 / 2,000</code></div>
+          <div><span style="color:#94a3b8;">p99 Latency:</span> <code>5,420ms</code></div>
+          <div><span style="color:#94a3b8;">Client SLA:</span> <span style="color:#f87171;">⚠️ Breach in 8 mins</span></div>
+        </div>
+        <div style="font-size:12px; color:#94a3b8; margin-bottom:14px;">
+          <b>⚡ Recommended SSM Playbooks:</b><br>
+          • <code>AWS-ScaleAuroraReplicaPool</code> (Auto-provision Read Replica)<br>
+          • <code>AWS-RecycleECSTasksGracefully</code> (Batch: 25% Task Flush)
+        </div>
+        <div style="display:flex; gap:10px; padding-top:8px; border-top:1px solid #383f45;">
+          <button class="slack-btn-primary" onclick="triggerApproveFromSlack()">⚡ Approve Self-Healing</button>
+          <button class="slack-btn-sec" onclick="closeSlackModal()">🔍 Open Console</button>
+          <button class="slack-btn-sec" style="color:#f87171;" onclick="closeSlackModal()">❌ Acknowledge Only</button>
+        </div>
+      </div>
+
+      <!-- Resolution Card View -->
+      <div class="slack-card-body resolved" id="slack-view-resolution" style="display:none;">
+        <div style="font-weight:700; color:#34d399; font-size:15px; margin-bottom:8px;">
+          ✅ RESOLVED & VERIFIED • 8910-FINTECH-PROD
+        </div>
+        <div style="font-size:13px; color:#cbd5e1; margin-bottom:12px; line-height:1.5;">
+          <b>Incident:</b> <code>INC-AWS-2026-9041</code> resolved automatically via AWS Systems Manager.<br>
+          <b>Total Resolution Time (MTTR):</b> <span style="color:#38bdf8; font-weight:700;">4.2 seconds</span> (down from ~52 min manual)<br>
+          <b>Client SLA Preserved:</b> <code>100% Availability</code> • <b>Financial Savings:</b> <span style="color:#34d399; font-weight:700;">$18,400.00 Saved</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12px; margin-bottom:16px;">
+          <div><span style="color:#94a3b8;">Canary Status:</span> <code style="color:#34d399;">100% HEALTHY</code></div>
+          <div><span style="color:#94a3b8;">Synthetics Error Rate:</span> <code>0.0% (0 errors)</code></div>
+          <div><span style="color:#94a3b8;">Restored Latency:</span> <code>42.4ms</code></div>
+          <div><span style="color:#94a3b8;">Downtime Avoided:</span> <code>52 minutes</code></div>
+        </div>
+        <div style="padding-top:8px; border-top:1px solid #383f45;">
+          <button class="slack-btn-primary" onclick="closeSlackModal(); document.getElementById('report-card').scrollIntoView({behavior:'smooth'});">📋 View Executive PIR Report</button>
         </div>
       </div>
     </div>
@@ -329,6 +420,33 @@
 
     function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function openSlackModal() {
+      document.getElementById('slack-modal').classList.add('open');
+    }
+
+    function closeSlackModal(e) {
+      if (!e || e.target.id === 'slack-modal' || e.target.tagName === 'BUTTON') {
+        document.getElementById('slack-modal').classList.remove('open');
+      }
+    }
+
+    function switchSlackTab(tab) {
+      document.querySelectorAll('.slack-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('tab-btn-' + tab).classList.add('active');
+      if (tab === 'incident') {
+        document.getElementById('slack-view-incident').style.display = 'block';
+        document.getElementById('slack-view-resolution').style.display = 'none';
+      } else {
+        document.getElementById('slack-view-incident').style.display = 'none';
+        document.getElementById('slack-view-resolution').style.display = 'block';
+      }
+    }
+
+    function triggerApproveFromSlack() {
+      closeSlackModal();
+      runAutonomousResolution();
     }
   </script>
 </body>
