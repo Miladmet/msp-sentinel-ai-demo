@@ -3,7 +3,7 @@
 > *Submitted to the AWS MSP AI Hackathon 2026 — Track 1: Run Your MSP Better*
 
 🌐 **Live Console URL**: [https://miladmet.github.io/msp-sentinel-ai-demo/](https://miladmet.github.io/msp-sentinel-ai-demo/)  
-🔒 **Core Engine Private Repository**: `https://github.com/Miladmet/msp-sentinel-ai` (Shared with `testing@devpost.com` and `aws-msp@amazon.com` per official hackathon rules).
+🔒 **Core Engine Repository**: `https://github.com/Miladmet/msp-sentinel-ai`
 
 ---
 
