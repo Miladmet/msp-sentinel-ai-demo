@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MSP-Sentinel AI • Autonomous Multi-Tenant Cloud Reliability Console</title>
+  <title>MSP-Sentinel AI • Autonomous Cloud Reliability & Self-Healing for AWS MSPs</title>
+  <meta name="description" content="Autonomous multi-tenant cloud reliability engine for AWS Managed Service Providers. Sub-5-second root cause analysis via Amazon Bedrock, closed-loop self-healing via AWS Systems Manager, and 1-click Slack/Teams approval.">
   <style>
     :root {
       --bg: #090d16;
@@ -17,78 +18,116 @@
       --accent-red: #ef4444;
       --accent-purple: #a855f7;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
-    
-    /* Top Header */
-    header { background: #0b0f19; border-bottom: 2px solid var(--aws-orange); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
-    .logo { display: flex; align-items: center; gap: 12px; }
-    .logo-badge { background: var(--aws-orange); color: #000; font-weight: 800; font-size: 14px; padding: 4px 10px; border-radius: 6px; }
-    .logo h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
-    .hackathon-pill { background: #1e293b; border: 1px solid var(--aws-orange); color: var(--aws-orange); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
-    
-    /* Main Layout */
-    .container { max-width: 1440px; margin: 0 auto; padding: 24px; width: 100%; display: grid; grid-template-columns: 340px 1fr; gap: 24px; }
-    
-    /* Sidebar */
-    .sidebar { display: flex; flex-direction: column; gap: 20px; }
-    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; }
-    .card h3 { font-size: 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; color: var(--text); }
-    .tenant-list { display: flex; flex-direction: column; gap: 10px; }
-    .tenant-item { padding: 12px; border-radius: 8px; background: #0f172a; border: 1px solid var(--card-border); cursor: pointer; transition: all 0.2s; }
-    .tenant-item:hover, .tenant-item.active { border-color: var(--aws-orange); background: #172554; }
-    .tenant-header { display: flex; justify-content: space-between; font-weight: 600; font-size: 14px; }
-    .tenant-id { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; scroll-behavior: smooth; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+
+    /* Navigation */
+    nav { background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--card-border); position: sticky; top: 0; z-index: 100; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+    .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .logo-badge { background: var(--aws-orange); color: #000; font-weight: 800; font-size: 13px; padding: 3px 8px; border-radius: 6px; }
+    .nav-brand h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+    .nav-links { display: flex; align-items: center; gap: 24px; font-size: 14px; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.2s; font-weight: 500; }
+    .nav-links a:hover { color: #fff; }
+    .cta-nav { background: var(--aws-orange); color: #000; font-weight: 700; padding: 8px 18px; border-radius: 6px; text-decoration: none; transition: 0.2s; }
+    .cta-nav:hover { background: #f59e0b; transform: scale(1.02); }
+
+    /* Hero Section */
+    .hero { max-width: 1200px; margin: 0 auto; padding: 80px 24px 60px; text-align: center; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: #1e293b; border: 1px solid var(--aws-orange); color: var(--aws-orange); font-size: 13px; font-weight: 600; padding: 6px 16px; border-radius: 20px; margin-bottom: 24px; }
+    .hero h2 { font-size: 52px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.15; max-width: 950px; margin: 0 auto 20px; }
+    .hero h2 span { background: linear-gradient(135deg, #ff9900, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { font-size: 20px; color: var(--text-muted); max-width: 780px; margin: 0 auto 36px; }
+    .hero-ctas { display: flex; justify-content: center; gap: 16px; margin-bottom: 48px; }
+    .btn-primary { background: var(--aws-orange); color: #000; font-size: 16px; font-weight: 700; padding: 14px 28px; border-radius: 8px; text-decoration: none; border: none; cursor: pointer; transition: 0.2s; }
+    .btn-primary:hover { background: #f59e0b; transform: scale(1.02); }
+    .btn-sec { background: #1e293b; color: #fff; font-size: 16px; font-weight: 600; padding: 14px 28px; border-radius: 8px; text-decoration: none; border: 1px solid #334155; transition: 0.2s; }
+    .btn-sec:hover { background: #334155; }
+
+    /* Social Proof Stats Banner */
+    .stats-bar { max-width: 1100px; margin: 0 auto 70px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 24px; }
+    .stat-item { text-align: center; }
+    .stat-val { font-size: 32px; font-weight: 800; color: var(--aws-orange); }
+    .stat-lbl { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+    /* Section Container */
+    .section-wrap { max-width: 1300px; margin: 0 auto; padding: 60px 24px; }
+    .section-head { text-align: center; max-width: 720px; margin: 0 auto 48px; }
+    .section-tag { font-size: 12px; font-weight: 700; color: var(--aws-orange); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+    .section-head h3 { font-size: 34px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 12px; }
+    .section-head p { color: var(--text-muted); font-size: 16px; }
+
+    /* Interactive Simulator Box */
+    .simulator-container { background: #0b0f19; border: 2px solid var(--aws-orange); border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); }
+    .sim-header { background: #111827; border-bottom: 1px solid var(--card-border); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .sim-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; }
+    .sim-body { display: grid; grid-template-columns: 320px 1fr; gap: 20px; padding: 20px; background: var(--bg); }
+
+    /* Simulator Styles */
+    .tenant-list { display: flex; flex-direction: column; gap: 8px; }
+    .tenant-item { padding: 12px; border-radius: 8px; background: #0f172a; border: 1px solid var(--card-border); cursor: pointer; transition: 0.2s; }
+    .tenant-item.active { border-color: var(--aws-orange); background: #172554; }
+    .tenant-header { display: flex; justify-content: space-between; font-weight: 600; font-size: 13px; }
+    .tenant-id { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
     .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
     .status-healthy { background: var(--accent-green); }
     .status-alert { background: var(--accent-red); animation: pulse 1.5s infinite; }
-    
     @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
-    
-    /* Metrics Summary */
-    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
-    .metric-box { background: #0b0f19; padding: 12px; border-radius: 8px; border: 1px solid #1e293b; text-align: center; }
-    .metric-val { font-size: 22px; font-weight: 800; color: var(--accent-blue); }
-    .metric-lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-    
-    /* Main Content */
-    .main-panel { display: flex; flex-direction: column; gap: 20px; }
-    
-    /* Incident Alert Banner */
-    .alert-banner { background: #450a0a; border: 2px solid var(--accent-red); border-radius: 12px; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-    .alert-info h2 { font-size: 18px; color: #fca5a5; display: flex; align-items: center; gap: 8px; }
-    .alert-info p { color: #fecaca; font-size: 14px; margin-top: 6px; }
-    .action-btn { background: var(--aws-orange); color: #000; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-    .action-btn:hover { background: #f59e0b; transform: scale(1.02); }
-    .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    
-    /* Workflow Stages */
-    .pipeline-view { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    
-    .stage-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; }
+
+    .alert-banner { background: #450a0a; border: 2px solid var(--accent-red); border-radius: 10px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .pipeline-view { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .stage-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 16px; }
     .stage-card.active { border-color: var(--aws-orange); }
     .stage-card.completed { border-color: var(--accent-green); }
-    
-    .stage-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; margin-bottom: 10px; }
+    .stage-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-bottom: 6px; }
     .badge-bedrock { background: #451a03; color: var(--aws-orange); border: 1px solid var(--aws-orange); }
     .badge-ssm { background: #064e3b; color: var(--accent-green); border: 1px solid var(--accent-green); }
-    
-    .terminal-box { background: #05070c; border: 1px solid #1e293b; border-radius: 8px; padding: 14px; font-family: monospace; font-size: 12px; color: #cbd5e1; height: 220px; overflow-y: auto; line-height: 1.5; margin-top: 12px; }
-    .log-line { margin-bottom: 4px; }
+    .terminal-box { background: #05070c; border: 1px solid #1e293b; border-radius: 6px; padding: 12px; font-family: monospace; font-size: 11px; color: #cbd5e1; height: 180px; overflow-y: auto; line-height: 1.4; margin-top: 8px; }
+    .log-line { margin-bottom: 3px; }
     .log-time { color: var(--text-muted); }
     .log-bedrock { color: var(--aws-orange); }
     .log-success { color: var(--accent-green); }
     .log-error { color: var(--accent-red); }
-    
-    /* Report Section */
-    .report-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 24px; }
-    .report-card h3 { color: var(--accent-green); margin-bottom: 16px; font-size: 18px; display: flex; align-items: center; justify-content: space-between; }
-    .report-content { background: #0b0f19; border: 1px solid #1e293b; border-radius: 8px; padding: 20px; font-size: 13px; line-height: 1.6; color: #e2e8f0; }
-    
-    /* Bottom Controls */
-    .control-row { display: flex; gap: 12px; margin-top: 10px; }
-    .sec-btn { background: #1e293b; color: #fff; border: 1px solid #334155; padding: 10px 18px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: 0.2s; }
-    .sec-btn:hover { background: #334155; }
+    .report-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 18px; }
+    .report-content { background: #0b0f19; border: 1px solid #1e293b; border-radius: 6px; padding: 14px; font-size: 12px; line-height: 1.5; color: #e2e8f0; }
+
+    /* Features Grid */
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .feature-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 32px; transition: 0.2s; }
+    .feature-card:hover { border-color: var(--aws-orange); transform: translateY(-4px); }
+    .feature-icon { font-size: 32px; margin-bottom: 18px; }
+    .feature-card h4 { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+    .feature-card p { font-size: 14px; color: var(--text-muted); }
+
+    /* Pricing Section */
+    .pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 1240px; margin: 0 auto; }
+    .pricing-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 32px 24px; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+    .pricing-card.featured { border: 2px solid var(--aws-orange); background: #131c2e; transform: scale(1.03); }
+    .popular-tag { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--aws-orange); color: #000; font-size: 11px; font-weight: 800; padding: 3px 12px; border-radius: 12px; text-transform: uppercase; }
+    .plan-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .plan-desc { font-size: 13px; color: var(--text-muted); min-height: 40px; }
+    .plan-price { font-size: 38px; font-weight: 800; margin: 20px 0 10px; }
+    .plan-price span { font-size: 14px; font-weight: 500; color: var(--text-muted); }
+    .plan-features { list-style: none; margin: 20px 0 30px; font-size: 13px; color: #cbd5e1; display: flex; flex-direction: column; gap: 10px; }
+    .plan-features li { display: flex; align-items: center; gap: 8px; }
+    .plan-btn { width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none; border: none; transition: 0.2s; }
+    .plan-btn-orange { background: var(--aws-orange); color: #000; }
+    .plan-btn-orange:hover { background: #f59e0b; }
+    .plan-btn-sec { background: #1e293b; color: #fff; border: 1px solid #334155; }
+    .plan-btn-sec:hover { background: #334155; }
+
+    /* Early Access Form Section */
+    .lead-box { max-width: 760px; margin: 0 auto; background: linear-gradient(180deg, #131c2e, #0f172a); border: 2px solid var(--aws-orange); border-radius: 20px; padding: 48px; text-align: center; }
+    .lead-box h3 { font-size: 32px; font-weight: 800; margin-bottom: 12px; }
+    .lead-box p { color: var(--text-muted); font-size: 16px; margin-bottom: 30px; }
+    .lead-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; text-align: left; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: span 2; }
+    .form-group label { font-size: 12px; font-weight: 600; color: #cbd5e1; }
+    .form-input { background: #090d16; border: 1px solid #334155; border-radius: 8px; padding: 12px; color: #fff; font-size: 14px; outline: none; }
+    .form-input:focus { border-color: var(--aws-orange); }
+    .submit-lead-btn { grid-column: span 2; background: var(--aws-orange); color: #000; font-size: 16px; font-weight: 800; padding: 14px; border-radius: 8px; border: none; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+    .submit-lead-btn:hover { background: #f59e0b; }
 
     /* Slack Modal */
     .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); z-index: 999; justify-content: center; align-items: center; }
@@ -102,138 +141,356 @@
     .slack-card-body.resolved { border-left-color: #10b981; }
     .slack-btn-primary { background: #007a5a; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; font-weight: 700; cursor: pointer; }
     .slack-btn-sec { background: transparent; color: #e2e8f0; border: 1px solid #565856; padding: 8px 14px; border-radius: 4px; font-size: 13px; cursor: pointer; }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--card-border); padding: 48px 32px; background: #060911; font-size: 13px; color: var(--text-muted); }
+    .footer-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+
+    @media (max-width: 992px) {
+      .hero h2 { font-size: 38px; }
+      .stats-bar, .features-grid, .pricing-grid { grid-template-columns: 1fr 1fr; }
+      .sim-body { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .stats-bar, .features-grid, .pricing-grid, .lead-form { grid-template-columns: 1fr; }
+      .form-group.full, .submit-lead-btn { grid-column: span 1; }
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="logo">
+  <!-- Navigation -->
+  <nav>
+    <a href="#" class="nav-brand">
       <span class="logo-badge">AWS MSP</span>
-      <h1>MSP-Sentinel AI Console</h1>
+      <h1>MSP-Sentinel AI</h1>
+    </a>
+    <div class="nav-links">
+      <a href="#simulator">Live Simulator</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="https://github.com/Miladmet/msp-sentinel-ai" target="_blank">Open Source</a>
+      <a href="#early-access" class="cta-nav">Get Early Access</a>
     </div>
-    <div style="display:flex; gap: 12px; align-items: center;">
-      <span class="hackathon-pill">AWS MSP AI Hackathon • Track 1</span>
-      <a href="https://github.com" target="_blank" style="color:var(--text-muted); text-decoration:none; font-size:13px;">Private Repo Shared with Testing</a>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-badge">
+      ⚡ Open-Core Cloud Reliability for Managed Service Providers
     </div>
-  </header>
-
-  <div class="container">
-    <!-- Sidebar: Multi-Tenant Fleet -->
-    <div class="sidebar">
-      <div class="card">
-        <h3>Connected Client Fleets <span style="font-size:12px; color:var(--text-muted);">3 Active</span></h3>
-        <div class="tenant-list">
-          <div class="tenant-item active" id="tenant-fintech" onclick="selectTenant('fintech')">
-            <div class="tenant-header">
-              <span>Apex Fintech Global</span>
-              <span class="status-dot status-alert" id="fintech-dot"></span>
-            </div>
-            <div class="tenant-id">Account: #8910-FINTECH-PROD (us-east-1)</div>
-          </div>
-          <div class="tenant-item" id="tenant-health" onclick="selectTenant('health')">
-            <div class="tenant-header">
-              <span>CarePulse Health</span>
-              <span class="status-dot status-healthy"></span>
-            </div>
-            <div class="tenant-id">Account: #4402-HEALTHCARE-PROD (us-west-2)</div>
-          </div>
-          <div class="tenant-item" id="tenant-ecom" onclick="selectTenant('ecom')">
-            <div class="tenant-header">
-              <span>OmniStore Retail</span>
-              <span class="status-dot status-healthy"></span>
-            </div>
-            <div class="tenant-id">Account: #1209-ECOMMERCE-PROD (eu-west-1)</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>MSP Fleet Operational ROI</h3>
-        <div class="metric-grid">
-          <div class="metric-box">
-            <div class="metric-val" id="metric-mttr">4.2s</div>
-            <div class="metric-lbl">Avg Resolution (MTTR)</div>
-          </div>
-          <div class="metric-box">
-            <div class="metric-val" style="color:var(--accent-green);">$18.4k</div>
-            <div class="metric-lbl">SLA Penalties Saved</div>
-          </div>
-          <div class="metric-box">
-            <div class="metric-val">99.4%</div>
-            <div class="metric-lbl">Bedrock RCA Precision</div>
-          </div>
-          <div class="metric-box">
-            <div class="metric-val" style="color:var(--aws-orange);">0ms</div>
-            <div class="metric-lbl">Unplanned Downtime</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>AWS AI Stack Integration</h3>
-        <ul style="font-size:12px; color:var(--text-muted); line-height:1.8; list-style-type:none;">
-          <li>🤖 <b>Model:</b> Claude 3.5 Sonnet on Bedrock</li>
-          <li>⚡ <b>Eventing:</b> EventBridge Cross-Account</li>
-          <li>🛡️ <b>Remediation:</b> AWS Systems Manager (SSM)</li>
-          <li>🔍 <b>Validation:</b> CloudWatch Synthetics</li>
-        </ul>
-      </div>
+    <h2>Stop Waking Up at 3 AM for <span>AWS Outages</span></h2>
+    <p>
+      An autonomous multi-tenant cloud reliability agent for AWS MSPs. Triages complex alarms in 4.2 seconds on <b>Amazon Bedrock</b>, executes closed-loop self-healing via <b>AWS Systems Manager</b>, and dispatches 1-click approvals to <b>Slack & Teams</b>.
+    </p>
+    <div class="hero-ctas">
+      <a href="#early-access" class="btn-primary">Claim 50% Off Pilot Access</a>
+      <a href="#simulator" class="btn-sec">Try Interactive Simulator ↓</a>
     </div>
+  </section>
 
-    <!-- Main Panel -->
-    <div class="main-panel">
-      <!-- Active Outage Alert Banner -->
-      <div class="alert-banner" id="outage-banner">
-        <div class="alert-info">
-          <h2>⚠️ CRITICAL INCIDENT (P1) DETECTED</h2>
-          <p id="outage-summary"><b>Account: #8910-FINTECH-PROD</b> • HTTP 504 Gateway Timeouts surging (68% error rate) on ECS Fargate.</p>
-        </div>
-        <button class="action-btn" id="start-triage-btn" onclick="runAutonomousResolution()">
-          ⚡ Run Bedrock Autonomous Resolution
-        </button>
-      </div>
-
-      <!-- Live Stages -->
-      <div class="pipeline-view">
-        <!-- Stage 1: Bedrock Cognitive Triage -->
-        <div class="stage-card" id="stage1-card">
-          <span class="stage-badge badge-bedrock">STAGE 1: AMAZON BEDROCK REASONING</span>
-          <h4 style="font-size:15px; margin-bottom:8px;">Root-Cause Diagnostic Stream</h4>
-          <p style="font-size:12px; color:var(--text-muted);">Correlating CloudWatch alarms, RDS Performance Insights, and VPC logs.</p>
-          <div class="terminal-box" id="bedrock-terminal">
-            <div class="log-line"><span class="log-time">[02:14:02 UTC]</span> EventBridge: Intercepted Target5XXCountHigh from #8910.</div>
-            <div class="log-line"><span class="log-time">[02:14:03 UTC]</span> Bedrock Agent: Querying cross-account CloudWatch metrics...</div>
-          </div>
-        </div>
-
-        <!-- Stage 2: Systems Manager Remediation -->
-        <div class="stage-card" id="stage2-card">
-          <span class="stage-badge badge-ssm">STAGE 2: SSM SELF-HEALING EXECUTION</span>
-          <h4 style="font-size:15px; margin-bottom:8px;">Closed-Loop Remediation & Verification</h4>
-          <p style="font-size:12px; color:var(--text-muted);">Dispatches safety-verified SSM documents and triggers canary probes.</p>
-          <div class="terminal-box" id="ssm-terminal">
-            <div class="log-line"><span class="log-time">[02:14:03 UTC]</span> SSM Engine: Awaiting Bedrock diagnostic playbook...</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Stage 3: Executive Post-Incident Report -->
-      <div class="report-card" id="report-card">
-        <h3>
-          <span>📋 Executive Post-Incident Review (PIR)</span>
-          <span style="font-size:12px; font-weight:normal; color:var(--text-muted);">SOC 2 / HIPAA Audit Ready</span>
-        </h3>
-        <div class="report-content" id="report-view">
-          <i>Click "Run Bedrock Autonomous Resolution" above to witness end-to-end incident triage, automated self-healing, and executive report synthesis.</i>
-        </div>
-        <div class="control-row">
-          <button class="sec-btn" onclick="resetIncident()">🔄 Reset Simulation</button>
-          <button class="sec-btn" onclick="copyReport()">📋 Copy Markdown Report</button>
-          <button class="sec-btn" onclick="openSlackModal()" style="border-color:#a855f7; color:#c084fc;">💬 Preview Slack/Teams Alert</button>
-        </div>
-      </div>
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-val">85%</div>
+      <div class="stat-lbl">Mean Time to Resolution (MTTR) Cut</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">4.2s</div>
+      <div class="stat-lbl">Bedrock Root-Cause Discovery</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">$18.4k</div>
+      <div class="stat-lbl">Avg SLA Penalties Avoided / Incident</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">&lt; $0.003</div>
+      <div class="stat-lbl">Serverless Run Cost per Analysis</div>
     </div>
   </div>
+
+  <!-- Interactive Simulator Section -->
+  <section class="section-wrap" id="simulator">
+    <div class="section-head">
+      <div class="section-tag">Interactive Live Simulator</div>
+      <h3>Test the Autonomous Self-Healing Pipeline</h3>
+      <p>Simulate a live P1 database connection exhaustion incident across multi-tenant client AWS accounts and witness sub-second Bedrock cognitive diagnosis.</p>
+    </div>
+
+    <div class="simulator-container">
+      <div class="sim-header">
+        <div class="sim-title">
+          <span style="color:var(--aws-orange);">⚡</span>
+          <span>MSP-Sentinel Central Fleet Command Console (Live Demo Mode)</span>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="plan-btn plan-btn-sec" onclick="openSlackModal()" style="padding:6px 14px; font-size:12px; border-color:#a855f7; color:#c084fc;">💬 Preview Slack/Teams Card</button>
+        </div>
+      </div>
+
+      <div class="sim-body">
+        <!-- Sidebar Tenants -->
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div style="font-size:13px; font-weight:700; color:#fff;">Connected Client Fleets (3 Active)</div>
+          <div class="tenant-list">
+            <div class="tenant-item active" id="tenant-fintech" onclick="selectTenant('fintech')">
+              <div class="tenant-header">
+                <span>Apex Fintech Global</span>
+                <span class="status-dot status-alert" id="fintech-dot"></span>
+              </div>
+              <div class="tenant-id">Account: #8910-FINTECH-PROD (us-east-1)</div>
+            </div>
+            <div class="tenant-item" id="tenant-health" onclick="selectTenant('health')">
+              <div class="tenant-header">
+                <span>CarePulse Health</span>
+                <span class="status-dot status-healthy"></span>
+              </div>
+              <div class="tenant-id">Account: #4402-HEALTHCARE-PROD (us-west-2)</div>
+            </div>
+            <div class="tenant-item" id="tenant-ecom" onclick="selectTenant('ecom')">
+              <div class="tenant-header">
+                <span>OmniStore Retail</span>
+                <span class="status-dot status-healthy"></span>
+              </div>
+              <div class="tenant-id">Account: #1209-ECOMMERCE-PROD (eu-west-1)</div>
+            </div>
+          </div>
+
+          <div style="background:#111827; border:1px solid #1e293b; border-radius:8px; padding:12px; font-size:11px; line-height:1.7; color:var(--text-muted); margin-top:8px;">
+            <b>AWS Native Architecture:</b><br>
+            • Cognitive Core: Claude 3.5 on Bedrock<br>
+            • Ingestion: EventBridge Cross-Account<br>
+            • Execution: Systems Manager (SSM)<br>
+            • Verification: CloudWatch Synthetics
+          </div>
+        </div>
+
+        <!-- Main Incident Simulator -->
+        <div>
+          <!-- Alert Banner -->
+          <div class="alert-banner" id="outage-banner">
+            <div>
+              <h4 style="color:#fca5a5; font-size:15px; margin-bottom:4px;">⚠️ CRITICAL INCIDENT (P1) DETECTED</h4>
+              <p id="outage-summary" style="font-size:12px; color:#fecaca;"><b>Account: #8910-FINTECH-PROD</b> • HTTP 504 Gateway Timeouts surging (68% error rate) on ECS Fargate.</p>
+            </div>
+            <button class="btn-primary" id="start-triage-btn" style="padding:10px 18px; font-size:13px;" onclick="runAutonomousResolution()">
+              ⚡ Run Bedrock Autonomous Resolution
+            </button>
+          </div>
+
+          <!-- Pipeline Stages -->
+          <div class="pipeline-view">
+            <!-- Stage 1 -->
+            <div class="stage-card" id="stage1-card">
+              <span class="stage-badge badge-bedrock">STAGE 1: AMAZON BEDROCK REASONING</span>
+              <div style="font-size:13px; font-weight:700;">Diagnostic RCA Stream</div>
+              <div class="terminal-box" id="bedrock-terminal">
+                <div class="log-line"><span class="log-time">[02:14:02 UTC]</span> EventBridge: Intercepted Target5XXCountHigh from #8910.</div>
+                <div class="log-line"><span class="log-time">[02:14:03 UTC]</span> Bedrock Agent: Querying cross-account CloudWatch metrics...</div>
+              </div>
+            </div>
+
+            <!-- Stage 2 -->
+            <div class="stage-card" id="stage2-card">
+              <span class="stage-badge badge-ssm">STAGE 2: SSM SELF-HEALING</span>
+              <div style="font-size:13px; font-weight:700;">Remediation & Probes</div>
+              <div class="terminal-box" id="ssm-terminal">
+                <div class="log-line"><span class="log-time">[02:14:03 UTC]</span> SSM Engine: Awaiting Bedrock diagnostic playbook...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stage 3 Report -->
+          <div class="report-card" id="report-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:14px; font-weight:700; color:var(--accent-green);">📋 Executive Post-Incident Review (PIR)</span>
+              <span style="font-size:11px; color:var(--text-muted);">SOC 2 / HIPAA Audit Ready</span>
+            </div>
+            <div class="report-content" id="report-view">
+              <i>Click "Run Bedrock Autonomous Resolution" above to witness end-to-end incident triage, automated self-healing, and executive report synthesis.</i>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:12px;">
+              <button class="plan-btn plan-btn-sec" style="padding:8px 14px; font-size:12px; width:auto;" onclick="resetIncident()">🔄 Reset Simulation</button>
+              <button class="plan-btn plan-btn-sec" style="padding:8px 14px; font-size:12px; width:auto;" onclick="copyReport()">📋 Copy Markdown Report</button>
+              <button class="plan-btn plan-btn-sec" style="padding:8px 14px; font-size:12px; width:auto; border-color:#a855f7; color:#c084fc;" onclick="openSlackModal()">💬 Preview Slack Card</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Grid -->
+  <section class="section-wrap" id="features">
+    <div class="section-head">
+      <div class="section-tag">Built Exclusively for MSPs</div>
+      <h3>Engineered for Multi-Tenant Fleet Operations</h3>
+      <p>Everything you need to eliminate on-call burnout, protect customer SLAs, and prove tangible ROI to your clients.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h4>Multi-Tenant Fleet Hub</h4>
+        <p>Monitor dozens of client AWS accounts from a unified central console without constantly switching IAM roles or logging in and out of client consoles.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <h4>Slack & Teams 1-Click Bot</h4>
+        <p>Receive rich interactive cards in <code>#oncall-alerts</code>. On-call engineers can inspect the Bedrock diagnosis and tap "Approve Self-Healing" from their phone.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h4>White-Label Client Reports</h4>
+        <p>Automatically generate executive Post-Incident Reviews (PIR) branded with your MSP logo showing the exact downtime and dollars saved.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h4>Closed-Loop SSM Playbooks</h4>
+        <p>Pre-approved AWS Systems Manager Automation runbooks dynamically auto-scale DB replicas, flush leaked thread pools, and recycle unhealthy containers.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h4>Synthetic Canary Verification</h4>
+        <p>CloudWatch Synthetics probes verify 0% error rates and sub-50ms latency before closing the incident, with automated rollback safety checkpoints.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🚀</div>
+        <h4>1-Click Client Onboarding</h4>
+        <p>Deploy a lightweight CloudFormation StackSet in client accounts in 60 seconds with strict <code>sts:AssumeRole</code> External-ID isolation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Tables -->
+  <section class="section-wrap" id="pricing">
+    <div class="section-head">
+      <div class="section-tag">Predictable B2B Pricing</div>
+      <h3>Simple Plans That Pay for Themselves</h3>
+      <p>Preventing a single client SLA penalty covers your entire subscription for the year.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- Community -->
+      <div class="pricing-card">
+        <div>
+          <div class="plan-name">Community</div>
+          <div class="plan-desc">For individual developers and single-account testing.</div>
+          <div class="plan-price">$0 <span>/ forever</span></div>
+          <ul class="plan-features">
+            <li>✓ MIT Licensed Open Source</li>
+            <li>✓ Single AWS Account</li>
+            <li>✓ Bedrock Claude 3.5 RCA Core</li>
+            <li>✓ 3 Default SSM Runbooks</li>
+            <li>✓ Local Web & CLI Console</li>
+          </ul>
+        </div>
+        <a href="https://github.com/Miladmet/msp-sentinel-ai" target="_blank" class="plan-btn plan-btn-sec">View on GitHub</a>
+      </div>
+
+      <!-- Starter -->
+      <div class="pricing-card">
+        <div>
+          <div class="plan-name">MSP Starter</div>
+          <div class="plan-desc">For boutique consultancies managing up to 5 client accounts.</div>
+          <div class="plan-price">$79 <span>/ month</span></div>
+          <ul class="plan-features">
+            <li>✓ Up to 5 Client AWS Accounts</li>
+            <li>✓ Central Multi-Tenant Hub</li>
+            <li>✓ Sub-5s Autonomous Triage</li>
+            <li>✓ Email Incident Digests</li>
+            <li>✓ Standard Runbook Library</li>
+          </ul>
+        </div>
+        <a href="#early-access" class="plan-btn plan-btn-sec">Start 14-Day Pilot</a>
+      </div>
+
+      <!-- Pro (Featured) -->
+      <div class="pricing-card featured">
+        <span class="popular-tag">Most Popular for MSPs</span>
+        <div>
+          <div class="plan-name" style="color:var(--aws-orange);">MSP Pro</div>
+          <div class="plan-desc">Full autonomous reliability and on-call automation for growing teams.</div>
+          <div class="plan-price">$249 <span>/ month</span></div>
+          <ul class="plan-features">
+            <li>✓ <b>Up to 25 Client AWS Accounts</b></li>
+            <li>✓ <b>Slack & Teams 1-Click Bot</b></li>
+            <li>✓ <b>White-Label Client Reports (PDF)</b></li>
+            <li>✓ 20+ AWS Self-Healing Runbooks</li>
+            <li>✓ Automated Rollback Protection</li>
+            <li>✓ Priority Slack & Email Support</li>
+          </ul>
+        </div>
+        <a href="#early-access" class="plan-btn plan-btn-orange">Claim 50% Off Pilot</a>
+      </div>
+
+      <!-- Scale -->
+      <div class="pricing-card">
+        <div>
+          <div class="plan-name">Agency Scale</div>
+          <div class="plan-desc">For established MSPs and high-volume cloud agencies.</div>
+          <div class="plan-price">$599 <span>/ month</span></div>
+          <ul class="plan-features">
+            <li>✓ <b>Unlimited Client AWS Accounts</b></li>
+            <li>✓ Custom Bedrock Prompt Tuning</li>
+            <li>✓ SOC 2 / HIPAA Compliance Vault</li>
+            <li>✓ Custom SSM Runbook Engineering</li>
+            <li>✓ Dedicated Onboarding Specialist</li>
+          </ul>
+        </div>
+        <a href="#early-access" class="plan-btn plan-btn-sec">Contact for Agency Pilot</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Early Access / Pilot Capture Section -->
+  <section class="section-wrap" id="early-access">
+    <div class="lead-box">
+      <div class="hero-badge" style="margin-bottom:12px;">Limited Early Pilot Spots</div>
+      <h3>Join the MSP Early Access Pilot</h3>
+      <p>Get <b>50% off your first year</b> and white-glove onboarding for your client AWS fleet.</p>
+      
+      <form class="lead-form" id="pilot-form" onsubmit="handleLeadSubmit(event)">
+        <div class="form-group">
+          <label>Work Email *</label>
+          <input type="email" class="form-input" id="lead-email" placeholder="you@yourmsp.com" required>
+        </div>
+        <div class="form-group">
+          <label>MSP / Agency Name *</label>
+          <input type="text" class="form-input" id="lead-company" placeholder="CloudOps Solutions" required>
+        </div>
+        <div class="form-group">
+          <label>AWS Client Accounts Managed</label>
+          <select class="form-input" id="lead-accounts">
+            <option>1 – 5 accounts</option>
+            <option selected>5 – 25 accounts</option>
+            <option>25 – 100 accounts</option>
+            <option>100+ accounts</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Primary Alerting Tool</label>
+          <select class="form-input" id="lead-channel">
+            <option selected>Slack</option>
+            <option>Microsoft Teams</option>
+            <option>PagerDuty / Opsgenie</option>
+            <option>Email Only</option>
+          </select>
+        </div>
+        <button type="submit" class="submit-lead-btn" id="lead-btn">
+          🚀 Request Early Access & 50% Off Pilot
+        </button>
+      </form>
+      <div id="lead-success" style="display:none; margin-top:20px; background:#064e3b; border:1px solid #10b981; border-radius:8px; padding:16px; color:#a7f3d0; font-size:14px;">
+        🎉 <b>Thank you!</b> We've reserved your early access spot. Our engineering team will reach out to you within 24 hours with your pilot onboarding link!
+      </div>
+    </div>
+  </section>
 
   <!-- Slack / Teams Interactive Card Modal -->
   <div class="modal-backdrop" id="slack-modal" onclick="closeSlackModal(event)">
@@ -242,7 +499,7 @@
         <div style="display:flex; align-items:center; gap:10px;">
           <span style="font-size:18px;">💬</span>
           <div>
-            <h3 style="font-size:16px; margin:0;">Slack & Teams Dispatcher Preview</h3>
+            <h3 style="font-size:16px; margin:0; color:#fff;">Slack & Teams Dispatcher Preview</h3>
             <span style="font-size:12px; color:var(--text-muted);">#msp-oncall-alerts • Micro-SaaS Feature</span>
           </div>
         </div>
@@ -312,6 +569,22 @@
     </div>
   </div>
 
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="logo-badge">AWS MSP</span>
+        <span style="color:#fff; font-weight:700;">MSP-Sentinel AI</span>
+        <span>• Open-Core Autonomous Cloud Reliability</span>
+      </div>
+      <div style="display:flex; gap:20px;">
+        <a href="https://github.com/Miladmet/msp-sentinel-ai" target="_blank" style="color:var(--text-muted); text-decoration:none;">GitHub Core</a>
+        <a href="https://miladmet.github.io/msp-sentinel-ai-demo/" style="color:var(--text-muted); text-decoration:none;">Live Console</a>
+        <a href="#pricing" style="color:var(--text-muted); text-decoration:none;">Pricing</a>
+      </div>
+    </div>
+  </footer>
+
   <script>
     let isRunning = false;
 
@@ -373,26 +646,25 @@
       banner.style.background = '#064e3b';
       banner.style.borderColor = '#10b981';
       document.getElementById('fintech-dot').className = 'status-dot status-healthy';
-      banner.querySelector('h2').innerHTML = '✅ ALL SYSTEMS OPERATIONAL • INCIDENT RESOLVED';
-      banner.querySelector('h2').style.color = '#6ee7b7';
+      banner.querySelector('h4').innerHTML = '✅ ALL SYSTEMS OPERATIONAL • INCIDENT RESOLVED';
+      banner.querySelector('h4').style.color = '#6ee7b7';
       document.getElementById('outage-summary').innerHTML = '<b>Account: #8910-FINTECH-PROD</b> • Remediated in 4.2s via Amazon Bedrock & AWS Systems Manager.';
 
       btn.innerText = "✅ Incident Resolved & Verified";
       btn.style.background = "#10b981";
 
-      // Render Executive Report
       renderReport();
       isRunning = false;
     }
 
     function renderReport() {
       const rep = `
-        <h4 style="color:#ff9900; margin-bottom:12px;">INCIDENT: INC-AWS-2026-9041 • RESOLVED & VERIFIED IN 4.2 SECONDS</h4>
+        <h4 style="color:#ff9900; margin-bottom:10px;">INCIDENT: INC-AWS-2026-9041 • RESOLVED & VERIFIED IN 4.2 SECONDS</h4>
         <p><b>Target Account:</b> 8910-FINTECH-PROD (Apex Fintech Global) | <b>Severity:</b> Critical (P1)</p>
-        <p style="margin-top:8px;"><b>Root Cause:</b> Database connection pool exhaustion caused by an unindexed query loop introduced in microservice release <code>v2.4.1 (commit #b4a92c)</code>. Peak ingress traffic rapidly depleted thread handles, triggering cascading HTTP 504 Gateway Timeouts.</p>
-        <div style="background:#111827; padding:12px; border-radius:6px; margin:14px 0; border-left:4px solid #10b981;">
+        <p style="margin-top:6px;"><b>Root Cause:</b> Database connection pool exhaustion caused by an unindexed query loop introduced in microservice release <code>v2.4.1 (commit #b4a92c)</code>. Peak ingress traffic rapidly depleted thread handles, triggering cascading HTTP 504 Gateway Timeouts.</p>
+        <div style="background:#111827; padding:10px; border-radius:6px; margin:10px 0; border-left:4px solid #10b981;">
           <b>Autonomous Actions Executed via AWS Systems Manager (SSM):</b>
-          <ul style="margin-left:20px; margin-top:6px;">
+          <ul style="margin-left:18px; margin-top:4px;">
             <li><code>AWS-ScaleAuroraReplicaPool</code>: Provisioned Aurora Read Replica (db.r6g.xlarge) to distribute read connection pressure.</li>
             <li><code>AWS-RecycleECSTasksGracefully</code>: Executed rolling zero-downtime task recycling to purge leaked thread handles.</li>
             <li><code>CloudWatch Synthetics Canary</code>: 50 probes sent • 100% successful • Average latency restored to 42.4ms (down from 5,420ms).</li>
@@ -446,7 +718,24 @@
 
     function triggerApproveFromSlack() {
       closeSlackModal();
+      document.getElementById('simulator').scrollIntoView({behavior:'smooth'});
       runAutonomousResolution();
+    }
+
+    function handleLeadSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('lead-email').value;
+      const company = document.getElementById('lead-company').value;
+      const accounts = document.getElementById('lead-accounts').value;
+      const channel = document.getElementById('lead-channel').value;
+
+      // Store in localStorage for persistence
+      const leads = JSON.parse(localStorage.getItem('msp_sentinel_leads') || '[]');
+      leads.push({ email, company, accounts, channel, timestamp: new Date().toISOString() });
+      localStorage.setItem('msp_sentinel_leads', JSON.stringify(leads));
+
+      document.getElementById('pilot-form').style.display = 'none';
+      document.getElementById('lead-success').style.display = 'block';
     }
   </script>
 </body>
