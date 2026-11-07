@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MSP-Sentinel AI • 100-Second Interactive Video Demo (Codegeist 2026)</title>
+  <meta name="description" content="Watch the 100-second live autonomous resolution walkthrough of MSP-Sentinel AI: Amazon Bedrock RCA, AWS SSM self-healing, Jira Forge issue panel, and Atlassian Rovo agent.">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --card-border: #1e293b;
+      --aws-orange: #ff9900;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-green: #10b981;
+      --accent-purple: #c084fc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: radial-gradient(circle at top, #1e1b4b 0%, #090d16 100%); color: var(--text); min-height: 100vh; line-height: 1.6; }
+    
+    /* Header */
+    header { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
+    .badge-aws { background: var(--aws-orange); color: #000; font-weight: 800; font-size: 12px; padding: 3px 8px; border-radius: 6px; }
+    .badge-codegeist { background: #1d4ed8; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; border: 1px solid #3b82f6; }
+    .brand-title { font-size: 17px; font-weight: 700; }
+    .header-links { display: flex; align-items: center; gap: 14px; }
+    .btn-link { color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 6px; transition: 0.2s; }
+    .btn-link:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+    .btn-cta { background: var(--aws-orange); color: #000; font-weight: 700; font-size: 13px; padding: 7px 16px; border-radius: 6px; text-decoration: none; transition: 0.2s; }
+    .btn-cta:hover { background: #f59e0b; transform: scale(1.02); }
+
+    /* Main Container */
+    .container { max-width: 1240px; margin: 30px auto; padding: 0 20px; }
+    .intro-header { text-align: center; margin-bottom: 28px; }
+    .intro-header h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 10px; }
+    .intro-header h1 span { background: linear-gradient(135deg, #ff9900, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .intro-header p { color: var(--text-muted); font-size: 16px; max-width: 760px; margin: 0 auto; }
+
+    /* Video Player Layout */
+    .demo-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start; }
+    
+    .player-card { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7); }
+    .video-wrapper { position: relative; background: #000; aspect-ratio: 16 / 9; }
+    video { width: 100%; height: 100%; object-fit: contain; display: block; }
+    
+    .player-controls { padding: 12px 20px; background: #0f172a; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center; }
+    .control-status { font-size: 12px; color: var(--accent-green); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .pulse-dot { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+    .player-actions { display: flex; gap: 8px; }
+    .action-btn { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); color: #cbd5e1; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.15s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+    .action-btn:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
+
+    /* Teleprompter Subtitles */
+    .teleprompter-box { padding: 18px 22px; background: #0b0f19; border-top: 1px solid rgba(255, 255, 255, 0.06); }
+    .teleprompter-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--aws-orange); margin-bottom: 6px; }
+    .teleprompter-text { font-size: 14px; color: #e2e8f0; line-height: 1.5; min-height: 44px; transition: color 0.2s; }
+    .teleprompter-text strong { color: var(--accent-purple); }
+
+    /* Chapter List Sidebar */
+    .chapters-card { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+    .chapters-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+    .chapters-card h3 span { font-size: 11px; background: #1e293b; padding: 3px 8px; border-radius: 4px; color: var(--text-muted); }
+    .chapter-list { display: flex; flex-direction: column; gap: 6px; max-height: 480px; overflow-y: auto; }
+    .chapter-item { padding: 10px 12px; border-radius: 8px; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer; transition: 0.15s; display: flex; gap: 10px; align-items: center; }
+    .chapter-item:hover { background: #1e293b; border-color: rgba(255, 255, 255, 0.15); }
+    .chapter-item.active { background: #1e1b4b; border-color: var(--accent-purple); }
+    .chapter-time { font-family: monospace; font-size: 11px; background: rgba(0, 0, 0, 0.4); padding: 3px 6px; border-radius: 4px; color: var(--accent-blue); font-weight: 700; }
+    .chapter-info { flex: 1; }
+    .chapter-title { font-size: 12px; font-weight: 600; color: #f1f5f9; line-height: 1.3; }
+    .chapter-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Bottom Info Cards */
+    .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 30px; }
+    .info-card { background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; }
+    .info-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 8px; color: var(--aws-orange); }
+    .info-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+    
+    @media (max-width: 900px) {
+      .demo-grid { grid-template-columns: 1fr; }
+      .info-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header>
+    <a href="index.html" class="brand">
+      <span class="badge-aws">AWS MSP</span>
+      <span class="badge-codegeist">Codegeist 2026</span>
+      <span class="brand-title">MSP-Sentinel AI</span>
+    </a>
+    <div class="header-links">
+      <a href="index.html#simulator" class="btn-link">⚡ Live Simulator</a>
+      <a href="https://github.com/miladmet/msp-sentinel-ai" target="_blank" class="btn-link">📦 GitHub Repo</a>
+      <a href="https://quickcast-r2-uploader.admettre.workers.dev/watch/qc_79q79pf7" target="_blank" class="btn-link">🎥 QuickCast Stream</a>
+      <a href="https://one-atlas-bxbr.atlassian.net" target="_blank" class="btn-cta">🎫 Open Jira Cloud</a>
+    </div>
+  </header>
+
+  <!-- Container -->
+  <main class="container">
+    <div class="intro-header">
+      <h1>Autonomous Cloud Reliability <span>Video Demo</span></h1>
+      <p>Watch how MSP-Sentinel AI ingests multi-tenant AWS alarms, triggers Bedrock Claude 3.5 Sonnet root-cause diagnosis in 4.2 seconds, and executes closed-loop SSM self-healing.</p>
+    </div>
+
+    <div class="demo-grid">
+      <!-- Player Card -->
+      <div class="player-card">
+        <div class="video-wrapper">
+          <video id="demoVideo" controls preload="metadata" playsinline>
+            <source src="https://quickcast-r2-uploader.admettre.workers.dev/v/qc_79q79pf7" type="video/webm">
+            <source src="https://quickcast-r2-uploader.admettre.workers.dev/v/qc_79q79pf7" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <div class="player-controls">
+          <div class="control-status">
+            <span class="pulse-dot"></span>
+            <span id="statusLabel">Ready to stream (1:41)</span>
+          </div>
+          <div class="player-actions">
+            <button class="action-btn" onclick="setSpeed(1)">1x</button>
+            <button class="action-btn" onclick="setSpeed(1.25)">1.25x</button>
+            <button class="action-btn" onclick="setSpeed(1.5)">1.5x</button>
+            <a href="https://quickcast-r2-uploader.admettre.workers.dev/watch/qc_79q79pf7" target="_blank" class="action-btn">🔗 Watch on QuickCast</a>
+          </div>
+        </div>
+
+        <!-- Teleprompter Narration Box -->
+        <div class="teleprompter-box">
+          <div class="teleprompter-tag">🎙️ Synchronized Narration / Voiceover</div>
+          <div class="teleprompter-text" id="teleprompter">
+            Press play or click any timestamp chapter on the right to start watching the automated resolution demo.
+          </div>
+        </div>
+      </div>
+
+      <!-- Chapter Sidebar -->
+      <div class="chapters-card">
+        <h3>
+          <span>TIMESTAMPS & CHAPTERS</span>
+          <span>101 Seconds</span>
+        </h3>
+        <div class="chapter-list">
+          <div class="chapter-item active" onclick="seekVideo(0, this)">
+            <span class="chapter-time">00:00</span>
+            <div class="chapter-info">
+              <div class="chapter-title">The 3 AM Cloud Outage Bottleneck</div>
+              <div class="chapter-desc">Alert fatigue & $18.4k SLA breach risks</div>
+            </div>
+          </div>
+
+          <div class="chapter-item" onclick="seekVideo(10, this)">
+            <span class="chapter-time">00:10</span>
+            <div class="chapter-info">
+              <div class="chapter-title">⚡ Triggering Bedrock Resolution</div>
+              <div class="chapter-desc">Cross-account EventBridge ingest & triage</div>
+            </div>
+          </div>
+
+          <div class="chapter-item" onclick="seekVideo(13, this)">
+            <span class="chapter-time">00:13</span>
+            <div class="chapter-info">
+              <div class="chapter-title">Cognitive RCA Stream (Claude 3.5)</div>
+              <div class="chapter-desc">Pinpointing commit #b4a92c pool saturation</div>
+            </div>
+          </div>
+
+          <div class="chapter-item" onclick="seekVideo(16, this)">
+            <span class="chapter-time">00:16</span>
+            <div class="chapter-info">
+              <div class="chapter-title">AWS SSM Automated Remediation</div>
+              <div class="chapter-desc">Aurora read replica & rolling restart</div>
+            </div>
+          </div>
+
+          <div class="chapter-item" onclick="seekVideo(18, this)">
+            <span class="chapter-time">00:18</span>
+            <div class="chapter-info">
+              <div class="chapter-title">CloudWatch Canary Probes</div>
+              <div class="chapter-desc">50 synthetic probes verify 0% error rate</div>
+            </div>
+          </div>
+
+          <div class="chapter-item" onclick="seekVideo(21, this)">
+            <span class="chapter-time">00:21</span>
+            <div class="chapter-info">
+              <div class="chapter-title">PIR & $18,400 SLA Savings</div>
+              <div class="chapter-desc">SOC 2 compliant executive audit report</div>
+            </div>
+          </div>
+
+          <div class="chapter-item" onclick="seekVideo(26, this)">
+            <span class="chapter-time">00:26</span>
+            <div class="chapter-info">
+              <div class="chapter-title">Multi-Tenant Fleet Architecture</div>
+              <div class="chapter-desc">Jira, Rovo, Fleet Hub, and 1-Click Bot</div>
+            </div>
+          </div>
+
+          <div class="chapter-item" onclick="seekVideo(74, this)">
+            <span class="chapter-time">01:14</span>
+            <div class="chapter-info">
+              <div class="chapter-title">GitHub Codebase & Specifications</div>
+              <div class="chapter-desc">Forge manifest, test suite & HLD docs</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="info-grid">
+      <div class="info-card">
+        <h4>🎫 Atlassian Forge App</h4>
+        <p>Built with UI Kit 2 for Jira Service Management. Embeds real-time Bedrock RCA directly into tickets and enables 1-click self-healing execution right in Jira.</p>
+      </div>
+      <div class="info-card">
+        <h4>🤖 Atlassian Rovo Agent</h4>
+        <p>Features <strong>Cloud Reliability Sentinel</strong> with 4 Model Context Protocol (MCP) tools for conversational incident triage, remediation, and report generation.</p>
+      </div>
+      <div class="info-card">
+        <h4>🛡️ Enterprise Compliance</h4>
+        <p>Every autonomous action is cryptographically signed and logged with SHA-256 digests to CloudTrail and Jira for instant SOC 2 and HIPAA audit compliance.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Interactive Player Script -->
+  <script>
+    const video = document.getElementById('demoVideo');
+    const teleprompter = document.getElementById('teleprompter');
+    const statusLabel = document.getElementById('statusLabel');
+    const chapters = document.querySelectorAll('.chapter-item');
+
+    const narrationTrack = [
+      { start: 0, end: 10, text: "When a critical P1 cloud outage strikes at 3 AM, on-call DevOps engineers lose an average of 52 minutes manually digging through fragmented AWS logs." },
+      { start: 10, end: 13, text: "Watch what happens: we trigger <strong>Bedrock Autonomous Resolution</strong>. In real-time, 12,480 telemetry data points are ingested across multi-tenant accounts." },
+      { start: 13, end: 16, text: "In just 4.2 seconds, <strong>Amazon Bedrock Claude 3.5 Sonnet</strong> diagnoses the exact root cause: connection pool exhaustion in deployment commit <strong>#b4a92c</strong> with 99.4% confidence." },
+      { start: 16, end: 18, text: "Next, MSP-Sentinel dispatches an automated <strong>AWS Systems Manager (SSM)</strong> runbook: provisioning an Aurora read replica and performing a zero-downtime rolling restart." },
+      { start: 18, end: 21, text: "Automated <strong>CloudWatch Synthetics</strong> canaries fire 50 health probes, confirming a 0% error rate and restoring sub-50ms latency." },
+      { start: 21, end: 26, text: "All systems operational! Incident resolved in 4.2s, generating a <strong>SOC 2 audit trail</strong> and saving <strong>$18,400 in contractual SLA breach penalties</strong>." },
+      { start: 26, end: 74, text: "Built for MSPs and cloud engineering teams, MSP-Sentinel connects directly into <strong>Atlassian Forge</strong>, powering native Jira issue panels, Slack/Teams bots, and an autonomous <strong>Rovo Agent (@Sentinel)</strong>." },
+      { start: 74, end: 101, text: "Our complete open-core architecture includes full unit test coverage, the registered Forge manifest, and a 60-second CloudFormation onboarding template. Contextual reliability to ship with confidence!" }
+    ];
+
+    function seekVideo(seconds, elem) {
+      video.currentTime = seconds;
+      video.play();
+      updateActiveChapter(seconds);
+    }
+
+    function setSpeed(speed) {
+      video.playbackRate = speed;
+      statusLabel.textContent = `Speed: ${speed}x`;
+    }
+
+    function updateActiveChapter(currentTime) {
+      chapters.forEach(ch => ch.classList.remove('active'));
+      const timestamps = [0, 10, 13, 16, 18, 21, 26, 74];
+      let activeIdx = 0;
+      for (let i = timestamps.length - 1; i >= 0; i--) {
+        if (currentTime >= timestamps[i]) {
+          activeIdx = i;
+          break;
+        }
+      }
+      if (chapters[activeIdx]) {
+        chapters[activeIdx].classList.add('active');
+      }
+    }
+
+    video.addEventListener('timeupdate', () => {
+      const cur = video.currentTime;
+      updateActiveChapter(cur);
+
+      const segment = narrationTrack.find(n => cur >= n.start && cur < n.end);
+      if (segment) {
+        teleprompter.innerHTML = segment.text;
+      }
+      statusLabel.textContent = `Playing (${Math.floor(cur)}s / 101s)`;
+    });
+
+    video.addEventListener('ended', () => {
+      statusLabel.textContent = "Demo Finished! Replay or test live in Jira.";
+      teleprompter.innerHTML = "Demo complete! Test live in Jira Cloud or try the interactive simulator.";
+    });
+  </script>
+</body>
+</html>
