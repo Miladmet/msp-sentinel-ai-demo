@@ -206,7 +206,7 @@
   <!-- Navigation -->
   <nav>
     <a href="#" class="nav-brand">
-      <span class="logo-badge">AWS MSP</span>
+      <span class="logo-badge">AWS MSP</span> <span style="background:#0052cc; color:#fff; font-weight:700; font-size:11px; padding:2px 7px; border-radius:4px; margin-left:6px;">Codegeist 2026</span>
       <h1>MSP-Sentinel AI</h1>
     </a>
     <div class="nav-links">
@@ -357,6 +357,7 @@
               <button class="plan-btn plan-btn-sec" style="padding:8px 14px; font-size:12px; width:auto;" onclick="resetIncident()">🔄 Reset Simulation</button>
               <button class="plan-btn plan-btn-sec" style="padding:8px 14px; font-size:12px; width:auto;" onclick="copyReport()">📋 Copy Markdown Report</button>
               <button class="plan-btn plan-btn-sec" style="padding:8px 14px; font-size:12px; width:auto; border-color:#a855f7; color:#c084fc;" onclick="openSlackModal()">💬 Preview Slack Card</button>
+              <button class="plan-btn plan-btn-sec" style="padding:8px 14px; font-size:12px; width:auto; border-color:#0052cc; color:#60a5fa;" onclick="openJiraModal()">🎫 Preview Jira & Rovo App</button>
               <button class="plan-btn plan-btn-orange" style="padding:8px 16px; font-size:12px; width:auto; font-weight:700;" onclick="openPdfModal()">📄 Export Executive PDF</button>
             </div>
           </div>
@@ -374,6 +375,11 @@
     </div>
 
     <div class="features-grid">
+      <div class="feature-card" style="border-color:#0052cc;">
+        <div class="feature-icon">🏆</div>
+        <h4>Atlassian Codegeist 2026: Jira & Rovo App</h4>
+        <p>Built with Atlassian Forge. Embeds Amazon Bedrock RCA into Jira Service Management issues, features an autonomous <code>@Sentinel</code> Rovo on-call agent, and exposes tools via <code>rovo:mcp</code>.</p>
+      </div>
       <div class="feature-card">
         <div class="feature-icon">🛡️</div>
         <h4>Multi-Tenant Fleet Hub</h4>
@@ -552,9 +558,11 @@
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <div class="slack-tabs">
+        <div class="slack-tabs" style="flex-wrap:wrap;">
           <button class="slack-tab-btn active" id="tab-btn-incident" onclick="switchSlackTab('incident')">🚨 P1 Alert Card</button>
           <button class="slack-tab-btn" id="tab-btn-resolution" onclick="switchSlackTab('resolution')">✅ Resolved Card</button>
+          <button class="slack-tab-btn" id="tab-btn-jira" onclick="switchSlackTab('jira')">🎫 Jira Issue Panel (Forge)</button>
+          <button class="slack-tab-btn" id="tab-btn-rovo" onclick="switchSlackTab('rovo')">🤖 Atlassian Rovo Agent</button>
         </div>
         <span style="font-size:11px; color:#10b981; background:#064e3b; padding:2px 8px; border-radius:10px;">Webhook Live Ready</span>
       </div>
@@ -588,6 +596,82 @@
           <button class="slack-btn-primary" onclick="triggerApproveFromSlack()">⚡ Approve Self-Healing</button>
           <button class="slack-btn-sec" onclick="closeSlackModal()">🔍 Open Console</button>
           <button class="slack-btn-sec" style="color:#f87171;" onclick="closeSlackModal()">❌ Acknowledge Only</button>
+        </div>
+      </div>
+
+
+      <!-- Jira Issue Panel View (Atlassian Forge UI Kit 2) -->
+      <div class="slack-card-body" id="slack-view-jira" style="display:none; border-left-color:#0052cc; background:#0c162d;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div>
+            <span style="background:#0052cc; color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px;">JSM-9041</span>
+            <span style="font-weight:700; color:#fff; font-size:14px; margin-left:8px;">Critical Outage • 8910-FINTECH-PROD</span>
+          </div>
+          <span style="font-size:11px; color:#f87171; background:#450a0a; border:1px solid #ef4444; padding:2px 8px; border-radius:4px; font-weight:700;">INVESTIGATING (P1)</span>
+        </div>
+
+        <div style="background:#132247; border:1px solid #1e3a8a; border-radius:8px; padding:12px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+            <b style="color:#60a5fa;">⚡ MSP-Sentinel AI Reliability Engine (Forge App)</b>
+            <span style="color:#34d399; font-weight:700;">99.4% AI Precision</span>
+          </div>
+          <div style="font-size:12px; color:#cbd5e1; line-height:1.45;">
+            <b>Amazon Bedrock RCA:</b> Aurora MySQL connection handles saturated (1,998 / 2,000 limit) due to unindexed query loop introduced in microservice deployment <code>commit #b4a92c</code>.
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; font-size:11px; background:#070d1e; padding:10px; border-radius:6px; margin-bottom:12px; border:1px solid #1e293b;">
+          <div><span style="color:#94a3b8;">DB Connections:</span><br><b style="color:#f87171;">1,998 / 2,000</b></div>
+          <div><span style="color:#94a3b8;">p99 Latency:</span><br><b style="color:#f87171;">5,420ms</b></div>
+          <div><span style="color:#94a3b8;">5xx Errors:</span><br><b style="color:#f87171;">482 Count</b></div>
+          <div><span style="color:#94a3b8;">Client SLA:</span><br><b style="color:#f87171;">Breach in 8m</b></div>
+        </div>
+
+        <div style="font-size:12px; color:#94a3b8; margin-bottom:12px;">
+          <b>Recommended SSM Playbooks:</b> <code>AWS-ScaleAuroraReplicaPool</code> & <code>AWS-RecycleECSTasksGracefully</code>
+        </div>
+
+        <div style="display:flex; gap:10px; padding-top:8px; border-top:1px solid #1e3a8a;">
+          <button class="slack-btn-primary" style="background:#0052cc;" onclick="triggerApproveFromSlack()">⚡ Approve & Execute in AWS (Jira 1-Click)</button>
+          <button class="slack-btn-sec" onclick="openPdfModal()">📄 View Executive PIR PDF</button>
+        </div>
+      </div>
+
+      <!-- Atlassian Rovo Agent View (rovo:agent & rovo:mcp) -->
+      <div class="slack-card-body" id="slack-view-rovo" style="display:none; border-left-color:#a855f7; background:#160d27;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:18px;">🤖</span>
+            <div>
+              <b style="color:#e9d5ff; font-size:14px;">Cloud Reliability Sentinel</b>
+              <span style="font-size:10px; background:#581c87; color:#d8b4fe; padding:2px 6px; border-radius:4px; margin-left:6px;">rovo:agent • rovo:mcp</span>
+            </div>
+          </div>
+          <span style="font-size:11px; color:#34d399;">● Online in Jira & Confluence</span>
+        </div>
+
+        <!-- Chat Transcript Mock -->
+        <div style="background:#0c0717; border:1px solid #2e1065; border-radius:8px; padding:12px; font-size:12px; line-height:1.5; margin-bottom:12px;">
+          <div style="margin-bottom:10px;">
+            <span style="color:#94a3b8;"><b>Engineer:</b> @Sentinel triage INC-AWS-2026-9041 and suggest runbook.</span>
+          </div>
+          <div style="border-left:2px solid #a855f7; padding-left:10px; color:#f3e8ff;">
+            <b>@Sentinel (Rovo Agent):</b><br>
+            Correlated 12,480 telemetry data points via Amazon Bedrock (Claude 3.5 Sonnet).<br>
+            • <b>Root Cause:</b> Primary Aurora DB connection handles saturated (1,998 / 2,000) due to unindexed query in commit <code>#b4a92c</code>.<br>
+            • <b>Threat:</b> Client SLA breach in 8 minutes ($18,400 penalty).<br>
+            • <b>Action:</b> I can execute <code>AWS-ScaleAuroraReplicaPool</code> and flush thread handles with zero downtime.
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+          <span style="font-size:11px; background:#2e1065; color:#c084fc; padding:4px 10px; border-radius:12px; cursor:pointer;" onclick="triggerApproveFromSlack()">👉 Execute SSM Runbook</span>
+          <span style="font-size:11px; background:#2e1065; color:#c084fc; padding:4px 10px; border-radius:12px; cursor:pointer;" onclick="openPdfModal()">👉 Export Executive PIR PDF</span>
+          <span style="font-size:11px; background:#2e1065; color:#c084fc; padding:4px 10px; border-radius:12px; cursor:pointer;" onclick="closeSlackModal(); document.getElementById('report-card').scrollIntoView({behavior:'smooth'});">👉 View Synthetics Probes</span>
+        </div>
+
+        <div style="font-size:11px; color:#a855f7; padding-top:6px; border-top:1px solid #3b0764;">
+          💡 <b>Codegeist 2026 Bonus Prize Track:</b> Powered by Atlassian Forge <code>rovo:agent</code> & <code>rovo:mcp</code> module.
         </div>
       </div>
 
@@ -933,14 +1017,19 @@
 
     function switchSlackTab(tab) {
       document.querySelectorAll('.slack-tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById('tab-btn-' + tab).classList.add('active');
-      if (tab === 'incident') {
-        document.getElementById('slack-view-incident').style.display = 'block';
-        document.getElementById('slack-view-resolution').style.display = 'none';
-      } else {
-        document.getElementById('slack-view-incident').style.display = 'none';
-        document.getElementById('slack-view-resolution').style.display = 'block';
-      }
+      const activeBtn = document.getElementById('tab-btn-' + tab);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const views = ['incident', 'resolution', 'jira', 'rovo'];
+      views.forEach(v => {
+        const el = document.getElementById('slack-view-' + v);
+        if (el) el.style.display = (v === tab) ? 'block' : 'none';
+      });
+    }
+
+    function openJiraModal() {
+      switchSlackTab('jira');
+      openSlackModal();
     }
 
     function triggerApproveFromSlack() {
