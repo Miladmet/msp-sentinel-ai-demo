@@ -5,7 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MSP-Sentinel AI • Autonomous Cloud Reliability & Self-Healing for AWS MSPs</title>
   <meta name="description" content="Autonomous multi-tenant cloud reliability engine for AWS Managed Service Providers. Sub-5-second root cause analysis via Amazon Bedrock, closed-loop self-healing via AWS Systems Manager, and 1-click Slack/Teams approval.">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link rel="canonical" href="https://miladmet.github.io/msp-sentinel-ai-demo/">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23ff9900'/><text x='50' y='68' font-size='60' text-anchor='middle' fill='%23000'>⚡</text></svg>">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="MSP-Sentinel AI • Autonomous Cloud Reliability for AWS MSPs">
+  <meta property="og:description" content="Sub-5-second root cause analysis via Amazon Bedrock Claude 3.5 Sonnet & automated self-healing via AWS Systems Manager for multi-tenant AWS fleets.">
+  <meta property="og:url" content="https://miladmet.github.io/msp-sentinel-ai-demo/">
+  <meta property="og:image" content="https://miladmet.github.io/msp-sentinel-ai-demo/web/logo-badge.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MSP-Sentinel AI • Autonomous Cloud Reliability for AWS MSPs">
+  <meta name="twitter:description" content="Sub-5-second root cause analysis via Amazon Bedrock Claude 3.5 Sonnet & automated self-healing via AWS Systems Manager.">
+  <meta name="twitter:image" content="https://miladmet.github.io/msp-sentinel-ai-demo/web/logo-badge.png">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
   <style>
     :root {
       --bg: #090d16;
@@ -126,7 +142,8 @@
     .form-group.full { grid-column: span 2; }
     .form-group label { font-size: 12px; font-weight: 600; color: #cbd5e1; }
     .form-input { background: #090d16; border: 1px solid #334155; border-radius: 8px; padding: 12px; color: #fff; font-size: 14px; outline: none; }
-    .form-input:focus { border-color: var(--aws-orange); }
+    .form-input:focus, .pdf-input-sm:focus { border-color: var(--aws-orange); outline: 2px solid var(--aws-orange) !important; outline-offset: 1px; }
+    .tenant-item:focus { outline: 2px solid var(--aws-orange); outline-offset: 2px; }
     .submit-lead-btn { grid-column: span 2; background: var(--aws-orange); color: #000; font-size: 16px; font-weight: 800; padding: 14px; border-radius: 8px; border: none; cursor: pointer; margin-top: 10px; transition: 0.2s; }
     .submit-lead-btn:hover { background: #f59e0b; }
 
@@ -280,21 +297,21 @@
         <div style="display:flex; flex-direction:column; gap:14px;">
           <div style="font-size:13px; font-weight:700; color:#fff;">Connected Client Fleets (3 Active)</div>
           <div class="tenant-list">
-            <div class="tenant-item active" id="tenant-fintech" onclick="selectTenant('fintech')">
+            <div class="tenant-item active" id="tenant-fintech" role="button" tabindex="0" onclick="selectTenant('fintech')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectTenant('fintech');}">
               <div class="tenant-header">
                 <span>Apex Fintech Global</span>
                 <span class="status-dot status-alert" id="fintech-dot"></span>
               </div>
               <div class="tenant-id">Account: #8910-FINTECH-PROD (us-east-1)</div>
             </div>
-            <div class="tenant-item" id="tenant-health" onclick="selectTenant('health')">
+            <div class="tenant-item" id="tenant-health" role="button" tabindex="0" onclick="selectTenant('health')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectTenant('health');}">
               <div class="tenant-header">
                 <span>CarePulse Health</span>
                 <span class="status-dot status-healthy"></span>
               </div>
               <div class="tenant-id">Account: #4402-HEALTHCARE-PROD (us-west-2)</div>
             </div>
-            <div class="tenant-item" id="tenant-ecom" onclick="selectTenant('ecom')">
+            <div class="tenant-item" id="tenant-ecom" role="button" tabindex="0" onclick="selectTenant('ecom')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectTenant('ecom');}">
               <div class="tenant-header">
                 <span>OmniStore Retail</span>
                 <span class="status-dot status-healthy"></span>
@@ -511,15 +528,15 @@
       
       <form class="lead-form" id="pilot-form" onsubmit="handleLeadSubmit(event)">
         <div class="form-group">
-          <label>Work Email *</label>
+          <label for="lead-email">Work Email *</label>
           <input type="email" class="form-input" id="lead-email" placeholder="you@yourmsp.com" required>
         </div>
         <div class="form-group">
-          <label>MSP / Agency Name *</label>
+          <label for="lead-company">MSP / Agency Name *</label>
           <input type="text" class="form-input" id="lead-company" placeholder="CloudOps Solutions" required>
         </div>
         <div class="form-group">
-          <label>AWS Client Accounts Managed</label>
+          <label for="lead-accounts">AWS Client Accounts Managed</label>
           <select class="form-input" id="lead-accounts">
             <option>1 – 5 accounts</option>
             <option selected>5 – 25 accounts</option>
@@ -528,7 +545,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Primary Alerting Tool</label>
+          <label for="lead-channel">Primary Alerting Tool</label>
           <select class="form-input" id="lead-channel">
             <option selected>Slack</option>
             <option>Microsoft Teams</option>
@@ -547,17 +564,17 @@
   </section>
 
   <!-- Slack / Teams Interactive Card Modal -->
-  <div class="modal-backdrop" id="slack-modal" onclick="closeSlackModal(event)">
+  <div class="modal-backdrop" id="slack-modal" role="dialog" aria-modal="true" aria-labelledby="slack-modal-title" onclick="closeSlackModal(event)">
     <div class="slack-modal" onclick="event.stopPropagation()">
       <div class="slack-header">
         <div style="display:flex; align-items:center; gap:10px;">
           <span style="font-size:18px;">💬</span>
           <div>
-            <h3 style="font-size:16px; margin:0; color:#fff;">Slack & Teams Dispatcher Preview</h3>
+            <h3 id="slack-modal-title" style="font-size:16px; margin:0; color:#fff;">Slack & Teams Dispatcher Preview</h3>
             <span style="font-size:12px; color:var(--text-muted);">#msp-oncall-alerts • Micro-SaaS Feature</span>
           </div>
         </div>
-        <button onclick="closeSlackModal()" style="background:transparent; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">&times;</button>
+        <button onclick="closeSlackModal()" aria-label="Close Slack modal" style="background:transparent; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">&times;</button>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
@@ -702,17 +719,17 @@
   </div>
 
   <!-- White-Label Executive PDF Export Modal -->
-  <div class="modal-backdrop" id="pdf-modal" onclick="closePdfModal(event)">
+  <div class="modal-backdrop" id="pdf-modal" role="dialog" aria-modal="true" aria-labelledby="pdf-modal-title" onclick="closePdfModal(event)">
     <div class="pdf-modal-container">
       <div class="pdf-modal-header">
         <div style="display:flex; align-items:center; gap:10px;">
           <span style="font-size:22px;">📄</span>
           <div>
-            <h3 style="font-size:16px; font-weight:800; color:#fff;">White-Label Executive PDF Report</h3>
-            <p style="font-size:12px; color:var(--text-muted);">Client-Ready Post-Incident Review • SOC 2 / HIPAA Audit Attestation</p>
+            <h3 id="pdf-modal-title" style="font-size:16px; font-weight:800; color:#fff;">White-Label Executive PDF Report</h3>
+            <p style="font-size:12px; color:var(--text-muted);">Client-Ready Post-Incident Review • Compliance & Audit Verification Attestation</p>
           </div>
         </div>
-        <button style="background:transparent; border:none; color:#94a3b8; font-size:24px; cursor:pointer;" onclick="closePdfModal()">&times;</button>
+        <button style="background:transparent; border:none; color:#94a3b8; font-size:24px; cursor:pointer;" aria-label="Close PDF modal" onclick="closePdfModal()">&times;</button>
       </div>
 
       <!-- Customization Toolbar -->
@@ -937,6 +954,16 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       checkBackendStatus();
+
+      // Escape key closes open accessible modals
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const sm = document.getElementById('slack-modal');
+          const pm = document.getElementById('pdf-modal');
+          if (sm && sm.classList.contains('open')) closeSlackModal();
+          if (pm && pm.classList.contains('open')) closePdfModal();
+        }
+      });
     });
 
     function log(terminalId, text, className) {
