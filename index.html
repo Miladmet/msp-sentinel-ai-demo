@@ -265,9 +265,10 @@
 
     <div class="simulator-container">
       <div class="sim-header">
-        <div class="sim-title">
+        <div class="sim-title" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
           <span style="color:var(--aws-orange);">⚡</span>
-          <span>MSP-Sentinel Central Fleet Command Console (Live Demo Mode)</span>
+          <span>MSP-Sentinel Central Fleet Command Console</span>
+          <span id="backend-status-badge" style="font-size:11px; padding:3px 10px; border-radius:99px; background:#1e293b; color:#94a3b8; border:1px solid #334155; font-weight:600;">Detecting runtime...</span>
         </div>
         <div style="display:flex; gap:10px;">
           <button class="plan-btn plan-btn-sec" onclick="openSlackModal()" style="padding:6px 14px; font-size:12px; border-color:#a855f7; color:#c084fc;">💬 Preview Slack/Teams Card</button>
@@ -357,7 +358,7 @@
             </div>
             <div style="display:flex; gap:10px; margin-top:12px;">
               <button class="plan-btn plan-btn-sec" style="padding:8px 14px; font-size:12px; width:auto;" onclick="resetIncident()">🔄 Reset Simulation</button>
-              <button class="plan-btn plan-btn-sec" style="padding:8px 14px; font-size:12px; width:auto;" onclick="copyReport()">📋 Copy Markdown Report</button>
+              <button class="plan-btn plan-btn-sec" id="copy-report-btn" style="padding:8px 14px; font-size:12px; width:auto;" onclick="copyReport()">📋 Copy Markdown Report</button>
               <button class="plan-btn plan-btn-sec" style="padding:8px 14px; font-size:12px; width:auto; border-color:#a855f7; color:#c084fc;" onclick="openSlackModal()">💬 Preview Slack Card</button>
               <button class="plan-btn plan-btn-sec" style="padding:8px 14px; font-size:12px; width:auto; border-color:#0052cc; color:#60a5fa;" onclick="openJiraModal()">🎫 Preview Jira & Rovo App</button>
               <button class="plan-btn plan-btn-orange" style="padding:8px 16px; font-size:12px; width:auto; font-weight:700;" onclick="openPdfModal()">📄 Export Executive PDF</button>
@@ -540,7 +541,7 @@
         </button>
       </form>
       <div id="lead-success" style="display:none; margin-top:20px; background:#064e3b; border:1px solid #10b981; border-radius:8px; padding:16px; color:#a7f3d0; font-size:14px;">
-        🎉 <b>Thank you!</b> We've reserved your early access spot. Our engineering team will reach out to you within 24 hours with your pilot onboarding link!
+        🎉 <b>Pilot Registration Saved (Demo Mode)!</b> Your early access configuration has been stored in local session storage for Codegeist 2026 hackathon evaluation. You can also explore the open-source code and Forge app directly on GitHub.
       </div>
     </div>
   </section>
@@ -900,6 +901,43 @@
 
   <script>
     let isRunning = false;
+    let isResolved = false;
+    let backendOnline = false;
+
+    // Check if Python backend is reachable on local server
+    async function checkBackendStatus() {
+      const badge = document.getElementById('backend-status-badge');
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1200);
+        const res = await fetch('/api/status', { method: 'GET', signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const data = await res.json();
+          backendOnline = true;
+          if (badge) {
+            badge.style.background = '#064e3b';
+            badge.style.color = '#6ee7b7';
+            badge.style.borderColor = '#10b981';
+            badge.innerHTML = '🟢 Live Backend: Connected (127.0.0.1:8080)';
+          }
+          return;
+        }
+      } catch (e) {
+        // Fallback for static hosts (GitHub Pages)
+      }
+      backendOnline = false;
+      if (badge) {
+        badge.style.background = '#172554';
+        badge.style.color = '#93c5fd';
+        badge.style.borderColor = '#3b82f6';
+        badge.innerHTML = '⚡ Mode: Interactive Simulation (Static Demo)';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkBackendStatus();
+    });
 
     function log(terminalId, text, className) {
       const term = document.getElementById(terminalId);
@@ -912,7 +950,7 @@
     }
 
     async function runAutonomousResolution() {
-      if (isRunning) return;
+      if (isRunning || isResolved) return;
       isRunning = true;
       const btn = document.getElementById('start-triage-btn');
       btn.disabled = true;
@@ -920,36 +958,72 @@
 
       document.getElementById('stage1-card').classList.add('active');
 
-      log('bedrock-terminal', 'Invoking Amazon Bedrock (anthropic.claude-3-5-sonnet)...', 'log-bedrock');
-      await sleep(600);
-      log('bedrock-terminal', 'Correlating 12,480 telemetry data points across ECS and Aurora DB...', 'log-bedrock');
-      await sleep(800);
-      log('bedrock-terminal', 'Anomaly Detected: Primary DB thread pool saturated (1,998 / 2,000 connections).', 'log-error');
-      await sleep(700);
-      log('bedrock-terminal', 'Traced fault to deployment commit #b4a92c: unindexed query loop.', 'log-bedrock');
-      await sleep(600);
-      log('bedrock-terminal', 'Root Cause Confirmed (Confidence: 99.4%): Max connections exhausted.', 'log-success');
-      log('bedrock-terminal', 'Generated Recommended SSM Playbook: AWS-ScaleAuroraReplicaPool & TaskRecycle.', 'log-bedrock');
+      if (backendOnline) {
+        log('bedrock-terminal', 'Connecting to local Sentinel backend at /api/triage...', 'log-bedrock');
+        try {
+          const res = await fetch('/api/triage', { method: 'POST' });
+          if (res.ok) {
+            const data = await res.json();
+            const diag = data.diagnosis;
+            await sleep(400);
+            log('bedrock-terminal', `Invoked Amazon Bedrock (${diag.model_id || 'anthropic.claude-3-5-sonnet'})...`, 'log-bedrock');
+            await sleep(500);
+            log('bedrock-terminal', `Correlating telemetry data across ${diag.target_account}...`, 'log-bedrock');
+            await sleep(500);
+            log('bedrock-terminal', `Anomaly Confirmed: ${diag.root_cause_summary}`, 'log-error');
+            await sleep(500);
+            log('bedrock-terminal', `Fault Traced: deployment commit ${diag.fault_commit}`, 'log-bedrock');
+            await sleep(400);
+            log('bedrock-terminal', `Root Cause Confirmed (Confidence: ${diag.confidence_score}%): ${diag.root_cause_category}`, 'log-success');
+            log('bedrock-terminal', `Generated SSM Playbook: ${diag.recommended_ssm_playbook}`, 'log-bedrock');
+          } else {
+            throw new Error('Triage API response not OK');
+          }
+        } catch (err) {
+          log('bedrock-terminal', 'Backend triage error, running cached model diagnosis...', 'log-bedrock');
+          await runFallbackStage1Logs();
+        }
+      } else {
+        await runFallbackStage1Logs();
+      }
 
       document.getElementById('stage1-card').classList.remove('active');
       document.getElementById('stage1-card').classList.add('completed');
       document.getElementById('stage2-card').classList.add('active');
 
       btn.innerText = "⏳ Executing SSM Self-Healing...";
-      await sleep(500);
+      await sleep(400);
 
-      log('ssm-terminal', 'SSM: Invoking AWS-ScaleAuroraReplicaPool on prod-aurora-cluster-8910...', 'log-bedrock');
-      await sleep(700);
-      log('ssm-terminal', 'SSM: Provisioned Aurora Read Replica (db.r6g.xlarge) — DB pool offloaded.', 'log-success');
-      await sleep(600);
-      log('ssm-terminal', 'SSM: Executing AWS-RecycleECSTasksGracefully (Batch: 25%)...', 'log-bedrock');
-      await sleep(700);
-      log('ssm-terminal', 'SSM: Rolling recycle complete. Stale connection handles flushed.', 'log-success');
-      await sleep(600);
-      log('ssm-terminal', 'Synthetics: Dispatching 50 canary health check probes...', 'log-bedrock');
-      await sleep(800);
-      log('ssm-terminal', 'Synthetics Probe Passed: 50/50 200 OK • Latency: 42.4ms • 0% Errors.', 'log-success');
-      log('ssm-terminal', 'SLA Target (99.95%) Restored. 0s Unplanned Downtime.', 'log-success');
+      if (backendOnline) {
+        log('ssm-terminal', 'Invoking /api/remediate against AWS Systems Manager...', 'log-bedrock');
+        try {
+          const res = await fetch('/api/remediate', { method: 'POST' });
+          if (res.ok) {
+            const data = await res.json();
+            const rem = data.remediation;
+            await sleep(500);
+            log('ssm-terminal', `SSM: Executing ${rem.playbook || 'AWS-ScaleAuroraReplicaPool'} (${rem.execution_id || 'SSM-EXEC-99120'})...`, 'log-bedrock');
+            await sleep(600);
+            log('ssm-terminal', 'SSM: Provisioned Aurora Read Replica — DB connection pool pressure offloaded.', 'log-success');
+            await sleep(500);
+            log('ssm-terminal', 'SSM: Executing AWS-RecycleECSTasksGracefully (zero downtime)...', 'log-bedrock');
+            await sleep(600);
+            log('ssm-terminal', 'SSM: Rolling recycle complete. Stale connections purged.', 'log-success');
+            await sleep(500);
+            log('ssm-terminal', 'Synthetics: Dispatching 50 canary health check probes...', 'log-bedrock');
+            await sleep(600);
+            log('ssm-terminal', `Synthetics Probe: ${rem.synthetics_status || '50/50 200 OK'} • Latency: ${rem.canary_latency_ms || 42.4}ms`, 'log-success');
+            log('ssm-terminal', 'SLA Target (99.95%) Restored. 0s Unplanned Downtime.', 'log-success');
+          } else {
+            throw new Error('Remediation API response not OK');
+          }
+        } catch (err) {
+          log('ssm-terminal', 'Backend remediation error, running cached execution...', 'log-bedrock');
+          await runFallbackStage2Logs();
+        }
+      } else {
+        await runFallbackStage2Logs();
+      }
 
       document.getElementById('stage2-card').classList.remove('active');
       document.getElementById('stage2-card').classList.add('completed');
@@ -968,6 +1042,35 @@
 
       renderReport();
       isRunning = false;
+      isResolved = true;
+    }
+
+    async function runFallbackStage1Logs() {
+      log('bedrock-terminal', 'Invoking Amazon Bedrock (anthropic.claude-3-5-sonnet)...', 'log-bedrock');
+      await sleep(600);
+      log('bedrock-terminal', 'Correlating 12,480 telemetry data points across ECS and Aurora DB...', 'log-bedrock');
+      await sleep(700);
+      log('bedrock-terminal', 'Anomaly Detected: Primary DB thread pool saturated (1,998 / 2,000 connections).', 'log-error');
+      await sleep(600);
+      log('bedrock-terminal', 'Traced fault to deployment commit #b4a92c: unindexed query loop.', 'log-bedrock');
+      await sleep(500);
+      log('bedrock-terminal', 'Root Cause Confirmed (Confidence: 99.4%): Max connections exhausted.', 'log-success');
+      log('bedrock-terminal', 'Generated Recommended SSM Playbook: AWS-ScaleAuroraReplicaPool & TaskRecycle.', 'log-bedrock');
+    }
+
+    async function runFallbackStage2Logs() {
+      log('ssm-terminal', 'SSM: Invoking AWS-ScaleAuroraReplicaPool on prod-aurora-cluster-8910...', 'log-bedrock');
+      await sleep(700);
+      log('ssm-terminal', 'SSM: Provisioned Aurora Read Replica (db.r6g.xlarge) — DB pool offloaded.', 'log-success');
+      await sleep(600);
+      log('ssm-terminal', 'SSM: Executing AWS-RecycleECSTasksGracefully (Batch: 25%)...', 'log-bedrock');
+      await sleep(700);
+      log('ssm-terminal', 'SSM: Rolling recycle complete. Stale connection handles flushed.', 'log-success');
+      await sleep(600);
+      log('ssm-terminal', 'Synthetics: Dispatching 50 canary health check probes...', 'log-bedrock');
+      await sleep(700);
+      log('ssm-terminal', 'Synthetics Probe Passed: 50/50 200 OK • Latency: 42.4ms • 0% Errors.', 'log-success');
+      log('ssm-terminal', 'SLA Target (99.95%) Restored. 0s Unplanned Downtime.', 'log-success');
     }
 
     function renderReport() {
@@ -989,18 +1092,77 @@
     }
 
     function resetIncident() {
-      location.reload();
+      if (isRunning) return;
+      isResolved = false;
+
+      // Reset Start Button
+      const btn = document.getElementById('start-triage-btn');
+      btn.disabled = false;
+      btn.innerText = "⚡ Run Bedrock Autonomous Resolution";
+      btn.style.background = "var(--aws-orange)";
+
+      // Reset Stage Cards
+      const s1 = document.getElementById('stage1-card');
+      const s2 = document.getElementById('stage2-card');
+      s1.className = 'stage-card active';
+      s2.className = 'stage-card';
+
+      // Reset Terminals
+      document.getElementById('bedrock-terminal').innerHTML = `
+        <div class="log-line"><span class="log-time">[02:14:02 UTC]</span> EventBridge: Ingested CloudWatch Alarm (HighDatabaseConnections > 95%)...</div>
+      `;
+      document.getElementById('ssm-terminal').innerHTML = `
+        <div class="log-line"><span class="log-time">[02:14:03 UTC]</span> SSM Engine: Awaiting Bedrock diagnostic playbook...</div>
+      `;
+
+      // Reset Banner to Red Outage
+      const banner = document.getElementById('outage-banner');
+      banner.style.background = '#450a0a';
+      banner.style.borderColor = '#ef4444';
+      const h4 = banner.querySelector('h4');
+      h4.innerText = '⚠️ CRITICAL INCIDENT (P1) DETECTED';
+      h4.style.color = '#fca5a5';
+      document.getElementById('fintech-dot').className = 'status-dot status-alert';
+      document.getElementById('outage-summary').innerHTML = '<b>Account: #8910-FINTECH-PROD</b> • HTTP 504 Gateway Timeouts surging (68% error rate) on ECS Fargate.';
+
+      // Reset Report View
+      document.getElementById('report-view').innerHTML = '<i>Click "Run Bedrock Autonomous Resolution" above to witness end-to-end incident triage, automated self-healing, and executive report synthesis.</i>';
     }
 
     function copyReport() {
+      const btn = document.getElementById('copy-report-btn');
       const text = document.getElementById('report-view').innerText;
-      navigator.clipboard.writeText(text);
-      alert('Executive Report copied to clipboard!');
+      navigator.clipboard.writeText(text).then(() => {
+        if (btn) {
+          const orig = btn.innerText;
+          btn.innerText = '✅ Copied to Clipboard!';
+          btn.style.borderColor = '#10b981';
+          btn.style.color = '#6ee7b7';
+          setTimeout(() => {
+            btn.innerText = orig;
+            btn.style.borderColor = '';
+            btn.style.color = '';
+          }, 2000);
+        }
+      }).catch(() => {
+        // Fallback for older browsers
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        if (btn) {
+          btn.innerText = '✅ Copied!';
+          setTimeout(() => { btn.innerText = '📋 Copy Markdown Report'; }, 2000);
+        }
+      });
     }
 
     function selectTenant(tenant) {
       document.querySelectorAll('.tenant-item').forEach(el => el.classList.remove('active'));
-      document.getElementById('tenant-' + tenant).classList.add('active');
+      const target = document.getElementById('tenant-' + tenant);
+      if (target) target.classList.add('active');
     }
 
     function sleep(ms) {
@@ -1037,6 +1199,9 @@
     function triggerApproveFromSlack() {
       closeSlackModal();
       document.getElementById('simulator').scrollIntoView({behavior:'smooth'});
+      if (isResolved) {
+        resetIncident();
+      }
       runAutonomousResolution();
     }
 
@@ -1082,7 +1247,7 @@
         const boldClient = document.createElement('b');
         boldClient.textContent = clientName;
         clientField.appendChild(boldClient);
-        clientField.appendChild(document.createTextNode( ()));
+        clientField.appendChild(document.createTextNode(` (${vaultId})`));
       }
 
       const now = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
@@ -1092,7 +1257,7 @@
       // Compute genuine dynamic SHA-256 audit digest over incident payload
       const hashEl = document.getElementById('pdf-audit-hash');
       if (hashEl && window.crypto && crypto.subtle) {
-        const payload = ${mspName}|||INC-AWS-2026-9041|;
+        const payload = `${mspName}|${clientName}|${vaultId}|INC-AWS-2026-9041|${now}`;
         const enc = new TextEncoder().encode(payload);
         crypto.subtle.digest('SHA-256', enc).then(buf => {
           const hashArray = Array.from(new Uint8Array(buf));
@@ -1117,10 +1282,10 @@
       const mspName = (document.getElementById('pdf-msp-input').value || '').trim() || 'Apex Cloud Managed Services';
       const clientName = (document.getElementById('pdf-client-input').value || '').trim() || 'Apex Fintech Global';
 
-      // 1. Check if backend API is reachable
+      // Attempt backend PDF generation first
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1500);
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
         const res = await fetch('/api/report/pdf', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1134,45 +1299,44 @@
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `MSP-Sentinel-PIR-${clientName.replace(/\s+/g, '_')}-INC-AWS-2026-9041.pdf`;
+          a.download = `MSP-Sentinel-PIR-INC-AWS-2026-9041.pdf`;
           document.body.appendChild(a);
           a.click();
-          document.body.removeChild(a);
+          a.remove();
           window.URL.revokeObjectURL(url);
           btn.innerHTML = '✅ PDF Downloaded';
           setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
           return;
         }
       } catch (err) {
-        // Backend not available (e.g. running on GitHub Pages static) - Fallback to client-side html2pdf
+        // Fallback to client-side html2pdf
       }
 
-      // 2. Client-side fallback using html2pdf.js
-      try {
-        const element = document.getElementById('pdf-paper-print');
-        const opt = {
-          margin: [10, 10, 10, 10],
-          filename: `MSP-Sentinel-PIR-${clientName.replace(/\s+/g, '_')}-INC-AWS-2026-9041.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+      const element = document.getElementById('pdf-paper-print');
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `MSP-Sentinel-PIR-INC-AWS-2026-9041.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
 
-        if (window.html2pdf) {
-          await window.html2pdf().set(opt).from(element).save();
+      if (window.html2pdf) {
+        html2pdf().set(opt).from(element).save().then(() => {
           btn.innerHTML = '✅ PDF Downloaded';
-        } else {
+          setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+        }).catch(err => {
+          console.error('html2pdf error:', err);
           window.print();
           btn.innerHTML = originalText;
-        }
-      } catch (err) {
-        console.error('PDF generation error:', err);
+          btn.disabled = false;
+        });
+      } else {
         window.print();
-      } finally {
-        setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
       }
     }
-
   </script>
 </body>
 </html>
